@@ -1,4 +1,4 @@
-package com.kd.data.news;
+package com.kd.data.docbuliders;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -240,7 +240,7 @@ public class DocumentBuilder {
 		if (StringUtils.isBlank(htmlSources) ) {
 			return null;
 		}
-		BrowserSearchDoc newsDoc = new BrowserSearchDoc();
+		BrowserSearchDoc browserSearchDoc = new BrowserSearchDoc();
 		Document doc = Jsoup.parse(htmlSources);
 		// title
 		String title = doc.title();
@@ -321,20 +321,20 @@ public class DocumentBuilder {
 		logger.info("result:End==================================content.length={}", content.length());
 		
 		// 装箱 
-		newsDoc.setAuthor(author);
-		newsDoc.setContent(StringUtils.isBlank(content)?title:content);
+		browserSearchDoc.setAuthor(author);
+		browserSearchDoc.setContent(StringUtils.isBlank(content)?title:content);
 		try {
 			Date publishDate = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(publishTime);
 			publishTime = DateFormatUtils.format(publishDate, "yyyyMMddHH");
 		} catch (ParseException e) {
 			publishTime = DateFormatUtils.format(new Date(), "yyyyMMddHH");
 		}
-		newsDoc.setDate(Long.valueOf(publishTime));
-		newsDoc.setGroupId(groupId);
-		newsDoc.setId(urlMD5);
-		newsDoc.setTitle(title);
-		newsDoc.setUrl(url);
-		return newsDoc;
+		browserSearchDoc.setDate(Long.valueOf(publishTime));
+		browserSearchDoc.setGroupId(groupId);
+		browserSearchDoc.setId(urlMD5);
+		browserSearchDoc.setTitle(title);
+		browserSearchDoc.setUrl(url);
+		return browserSearchDoc;
 	}
 	
 	
