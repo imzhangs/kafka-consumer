@@ -73,7 +73,9 @@ public class ConsumerRunable<K, V> implements Runnable {
 					logger.error("explain failed, message typeerror !!!!");
 					continue;
 				}
-				explain(message);
+				
+				explainTempFileAndSave(message);
+				
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
@@ -108,33 +110,47 @@ public class ConsumerRunable<K, V> implements Runnable {
 
 	}
 
-	public NewsDoc explainTempFile(KafkaMessage message) {
-		NewsDoc newsDoc = null;
+	public void explainTempFileAndSave(KafkaMessage message) {
 		if (message == null || StringUtils.isBlank(message.getTempFilePath())) {
 			log.error("kafka consumer received message is null...");
-			return null;
+			return ;
 		}
-
-		File tempFile = new File(message.getTempFilePath());
+		String filepath=message.getTempFilePath();
+		File tempFile = new File(filepath);
 		if (!tempFile.exists()) {
-			log.error("tempFile does not exists !!! path ={}",message.getTempFilePath());
-			return null;
+			log.error("tempFile does not exists !!! path ={}",filepath);
+			return ;
 		}
 
 		// 后期考虑 DFS
 		try {
-			String content = FileUtils.readFileToString(new File(message.getTempFilePath()), "utf-8");
+			String content = FileUtils.readFileToString(new File(filepath), "utf-8");
 			if(StringUtils.isBlank(content)){
-				log.warn("tempFile conetnt is empty ... with path={}",message.getTempFilePath());
+				log.warn("tempFile conetnt is empty ... with path={}",filepath);
+			}
+			Object saveDoc=null;
+			switch(message.getType()){
+			case _customer:
+				saveDoc = DocumentBuilder.browserSearchDocBuild(filepath.substring(filepath.lastIndexOf("/"),filepath.length()), content);
+				break;
+			case _default:
+				saveDoc = DocumentBuilder.defaultNewsDocBuild(filepath.substring(filepath.lastIndexOf("/"),filepath.length()), content);
+				break;
+			case _requestURL:
+				break;
+			default:
+				break;
 			}
 			
-			
+			String saveResult=HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(saveDoc));
+			log.debug("saved successfully ! sources =>>{}",saveResult);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		return newsDoc;
 	}
-
+	
+	
+	
 }

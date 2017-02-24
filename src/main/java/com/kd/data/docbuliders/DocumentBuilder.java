@@ -236,7 +236,7 @@ public class DocumentBuilder {
 	 * @param htmlSources
 	 * @return
 	 */
-	public  static BrowserSearchDoc BrowserSearchDocBuild(String url, String htmlSources) {
+	public  static BrowserSearchDoc browserSearchDocBuild(String url, String htmlSources) {
 		if (StringUtils.isBlank(htmlSources) ) {
 			return null;
 		}
