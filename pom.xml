@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.kd.xigua</groupId>
-  <artifactId>xigua-consumer</artifactId>
-  <version>1.0.0.</version>
-  
-  
-  <properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.kd.xigua</groupId>
+	<artifactId>xigua-consumer</artifactId>
+	<version>1.0.0.</version>
+
+
+	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
@@ -35,12 +36,10 @@
 
 
 	<dependencies>
-	
-		<!-- <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency> -->
-		
+
+		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-web</artifactId> 
+			</dependency> -->
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -75,7 +74,7 @@
 			<version>1.2</version>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
@@ -115,7 +114,13 @@
 			<artifactId>commons-api</artifactId>
 			<version>1.1.2</version>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>com.kd.search</groupId>
+			<artifactId>browser-search-api</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
 	</dependencies>
 
 
@@ -182,5 +187,5 @@
 		</plugins>
 
 	</build>
-  
+
 </project>
