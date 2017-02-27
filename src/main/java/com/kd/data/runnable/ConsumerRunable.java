@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.kd.commons.domain.KafkaMessage;
 import com.kd.commons.http.HttpRequestUtil;
 import com.kd.data.docbuliders.DocumentBuilder;
+import com.kd.data.docbuliders.SendMQBuilder;
 import com.kd.news.domain.NewsDoc;
 
 import kafka.consumer.ConsumerIterator;
@@ -24,6 +25,8 @@ public class ConsumerRunable<K, V> implements Runnable {
 	String contentKeyRegexs;
 
 	String indexSaveUrl;
+	
+	SendMQBuilder sendMQBuilder;
 
 	public String getContentKeyRegexs() {
 		return contentKeyRegexs;
@@ -74,7 +77,7 @@ public class ConsumerRunable<K, V> implements Runnable {
 					continue;
 				}
 				
-				explainTempFileAndSave(message);
+				explain(message);
 				
 			} catch (Throwable e) {
 				e.printStackTrace();
@@ -128,22 +131,44 @@ public class ConsumerRunable<K, V> implements Runnable {
 			if(StringUtils.isBlank(content)){
 				log.warn("tempFile conetnt is empty ... with path={}",filepath);
 			}
-			Object saveDoc=null;
 			switch(message.getType()){
-			case _customer:
-				saveDoc = DocumentBuilder.browserSearchDocBuild(filepath.substring(filepath.lastIndexOf("/"),filepath.length()), content);
-				break;
 			case _default:
-				saveDoc = DocumentBuilder.defaultNewsDocBuild(filepath.substring(filepath.lastIndexOf("/"),filepath.length()), content);
+			case _buildDocument:
+				////文档解析	
+				{
+					Object saveDoc=null;
+					switch(message.getBuildDocType()){
+					case newsDoc:
+						saveDoc = DocumentBuilder.browserSearchDocBuild(message.getUrl(), content);
+						break;
+					case topicDoc:
+						saveDoc = DocumentBuilder.defaultNewsDocBuild(message.getUrl(), content);
+						break;
+					case weixinGzhDoc:
+						break;
+					default:
+						break;
+					}
+					String saveResult=HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(saveDoc));
+					log.debug("saved successfully ! sources =>>{}",saveResult);
+				}
 				break;
 			case _requestURL:
+				message=DocumentBuilder.buildSource(message);
+				sendMQBuilder.sendMessgae(message);
+				break;
+			case _tempSegements:
+				//TODO HDFS
+				String htmlSources=FileUtils.readFileToString(new File(message.getTempFilePath()),"utf-8");
+				sendMQBuilder.urlExplainAndSend(htmlSources);
+				break;
+			case _customer:
 				break;
 			default:
 				break;
+			
 			}
 			
-			String saveResult=HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(saveDoc));
-			log.debug("saved successfully ! sources =>>{}",saveResult);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
