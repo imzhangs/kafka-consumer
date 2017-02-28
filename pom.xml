@@ -104,15 +104,27 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>3.1.0</version><!--$NO-MVN-MAN-VER$ -->
+		</dependency>
+
+		<dependency>
 			<groupId>com.kd.commons</groupId>
 			<artifactId>commons-tools</artifactId>
-			<version>0.0.2</version>
+			<version>0.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>auto-web-api</groupId>
+			<artifactId>auto-web-api</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.kd.commons</groupId>
 			<artifactId>commons-api</artifactId>
-			<version>1.1.2</version>
+			<version>1.1.6</version>
 		</dependency>
 
 		<dependency>
