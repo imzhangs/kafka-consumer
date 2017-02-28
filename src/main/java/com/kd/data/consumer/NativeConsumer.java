@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.kd.data.docbuliders.SendMQBuilder;
 import com.kd.data.runnable.ConsumerRunable;
 
 import kafka.consumer.ConsumerConfig;
@@ -44,6 +45,9 @@ public class NativeConsumer {
 	@Autowired
 	ExecutorService executor;
 	
+	@Autowired
+	SendMQBuilder	sendMQBuilder;
+	
 	private ConsumerConnector consumer;
 	
 	private static ConsumerConfig createConsumerConfig(String a_zookeeper, String a_groupId,int consumeAnalyseThreads,String encoding) {
@@ -75,6 +79,7 @@ public class NativeConsumer {
 			ConsumerRunable<byte[], byte[]> consumer=	new ConsumerRunable<>(stream);
 			consumer.setContentKeyRegexs(contentKeyRegexs);
 			consumer.setIndexSaveUrl(indexSaveUrl);
+			consumer.setSendMQBuilder(sendMQBuilder);
 			executor.submit(consumer);
 		}
 	}

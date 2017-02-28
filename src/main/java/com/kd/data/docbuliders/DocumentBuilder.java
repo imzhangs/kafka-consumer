@@ -15,11 +15,15 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSONObject;
 import com.kd.browersearch.domain.BrowserSearchDoc;
 import com.kd.commons.consts.HtmlContentConsts;
 import com.kd.commons.consts.HtmlRegexConsts;
@@ -247,7 +251,7 @@ public class DocumentBuilder {
 	 * @param htmlSources
 	 * @return
 	 */
-	public static BrowserSearchDoc browserSearchDocBuild(String url, String htmlSources) {
+	public static BrowserSearchDoc browserSearchDocBuild(String url, String htmlSources, boolean isPlainText) {
 		if (StringUtils.isBlank(htmlSources)) {
 			return null;
 		}
@@ -278,7 +282,8 @@ public class DocumentBuilder {
 				value.pCount += 1;
 			} else {
 				value.pCount = 1;
-				value.htmlContent = paperSub.parent().text().trim();
+				value.htmlContent = isPlainText ? paperSub.parent().text() : paperSub.parent().html();
+				value.htmlContent = value.htmlContent.trim();
 			}
 			contentMapping.put(key, value);
 		}
@@ -347,8 +352,116 @@ public class DocumentBuilder {
 		browserSearchDoc.setUrl(url);
 		return browserSearchDoc;
 	}
-
 	
+	
+	/**
+	 * 微信公众号 文档实体
+	 * 
+	 * @param url
+	 * @param htmlSources
+	 * @return
+	 */
+	public static BrowserSearchDoc browserWeixinGzhDocBuild(String url, String htmlSources, boolean isPlainText) {
+		if (StringUtils.isBlank(htmlSources)) {
+			return null;
+		}
+		BrowserSearchDoc browserSearchDoc = new BrowserSearchDoc();
+		Document doc = Jsoup.parse(htmlSources);
+		// title
+		String title = doc.title();
+		try {
+			if (StringUtils.isBlank(title)) {
+				title = htmlSources.split(HtmlRegexConsts.TITLE_S)[1].split(HtmlRegexConsts.TITLE_E)[0];
+			}
+		} catch (Throwable e) {
+		}
+		
+		// publish datetime
+		String publishDate=doc.getElementById("post-date").text();
+		String author = doc.getElementById("post-user").text();
+
+		String saveDate =  doc.body().data().replaceFirst(HtmlRegexConsts.PUBLISH_DATE_TIME_MATCHE, "$1");
+		saveDate = saveDate.matches(HtmlRegexConsts.PUBLISH_DATE_TIME_MATCHE) ? saveDate
+				: doc.body().text().replaceFirst(HtmlRegexConsts.PUBLISH_DATE_TIME_MATCHE, "$1");
+		
+		Map<String, ContentValue> contentMapping = new HashMap<String, ContentValue>();
+		
+		// 猜测正文，p标签统计 start====================>
+		for (Element paperSub : doc.body().select("p").next()) {
+			String key = MD5Util.MD5(paperSub.parent().html());
+			ContentValue value = new ContentValue();
+			if (contentMapping.containsKey(key)) {
+				value = contentMapping.get(key);
+				value.pCount += 1;
+			} else {
+				value.pCount = 1;
+				value.htmlContent = isPlainText ? paperSub.parent().text() : paperSub.parent().html();
+				value.htmlContent = value.htmlContent.trim();
+			}
+			contentMapping.put(key, value);
+		}
+		
+		// 正文最大可能:获得最多p标签所在区域 的html文本
+		int maxCount = 0;
+		String maxKey = "";
+		for (Map.Entry<String, ContentValue> entry : contentMapping.entrySet()) {
+			if (null != entry.getValue() && entry.getValue().pCount > maxCount) {
+				maxCount = entry.getValue().pCount;
+				maxKey = entry.getKey();
+			}
+		}
+		
+		StringBuffer contentBuff = new StringBuffer();
+		if (StringUtils.isNotBlank(maxKey)) {
+			logger.info("正文最大概率 区域Key:" + maxKey + ",<p> maxCount:" + maxCount);
+			ContentValue value = contentMapping.get(maxKey);
+			contentBuff.setLength(0);
+			contentBuff.append(value.htmlContent);
+		}
+		/// <<<=========正文统计结束==========
+		
+		// author
+		String domain = url.replaceFirst(HtmlRegexConsts.DOMAIN, "$2");
+		
+		// groupId
+		String groupId = DateFormatUtils.format(new Date(), StringFormatConsts.DATE_HOUR_NUMBER_FORMAT);
+		String urlMD5 = MD5Util.MD5(url);
+		
+		// updateTime
+		String updateTime = DateFormatUtils.format(new Date(), StringFormatConsts.SIMPLE_DATETIME_FORMAT);
+		
+		String content = contentBuff.toString();
+		// content.2
+		content = content.split(HtmlContentConsts.CONTENT_END)[0];
+		// content.3
+		content = content.replaceAll(HtmlContentConsts.CONTENT_INNER_MEDIA, "");
+		// content.4
+		content = content.replaceAll(HtmlRegexConsts.EXHANGE_TAG, "");
+		
+		logger.info("result:Start==================<{}>===================", url);
+		logger.info(" url:\t\t {}", url);
+		logger.info(" publishTime:\t\t {}", saveDate);
+		logger.info(" title:\t\t {}", title);
+		logger.info(" author:\t\t {}", author);
+		logger.info(" groupId:\t\t {}", groupId);
+		logger.info(" urlMD5:\t\t {}", urlMD5);
+		logger.info(" updateTime:\t\t {}", updateTime);
+		logger.info(" content:\t\t {}", content.length() > 64 ? content.substring(0, 64) + "......" : content);
+		logger.info("result:End==================================content.length={}", content.length());
+		
+		// 装箱
+		browserSearchDoc.setAuthor(author);
+		browserSearchDoc.setDomain(domain);
+		browserSearchDoc.setContent(StringUtils.isBlank(content) ? title : content);
+		browserSearchDoc.setPublishDate(publishDate);
+		browserSearchDoc.setDate(Long.valueOf(saveDate));
+		browserSearchDoc.setGroupId(groupId);
+		browserSearchDoc.setId(urlMD5);
+		browserSearchDoc.setTitle(title);
+		browserSearchDoc.setUrl(url);
+		return browserSearchDoc;
+	}
+
 	public static AbstractDocument docBuilder(KafkaMessage message) {
 		AbstractDocument doc = null;
 		if (message == null) {
@@ -371,12 +484,14 @@ public class DocumentBuilder {
 					e.printStackTrace();
 				}
 			}
-			
-			if (StringUtils.isBlank(message.getContent())){
+
+			if (StringUtils.isBlank(message.getContent())) {
 				WebDriver driver = null;
 				try {
 					driver = BrowserFactory.createWindowsPhantomJS();
 					driver.get(message.getUrl());
+					WebDriverWait wait = new WebDriverWait(driver, 30);
+					wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
 					sources = driver.getPageSource();
 				} catch (Throwable e) {
 					logger.error(e.getCause().toString());
@@ -397,9 +512,10 @@ public class DocumentBuilder {
 				doc = defaultNewsDocBuild(message.getUrl(), message.getContent());
 				break;
 			case topicDoc:
+				doc = browserSearchDocBuild(message.getUrl(), message.getContent(),true);
 				break;
 			case weixinGzhDoc:
-				doc = browserSearchDocBuild(message.getUrl(), message.getContent());
+				doc = browserWeixinGzhDocBuild(message.getUrl(), message.getContent(),true);
 				break;
 			default:
 				break;
@@ -409,6 +525,11 @@ public class DocumentBuilder {
 		}
 
 		return doc;
+	}
+
+	public static String docBuilderString(KafkaMessage message) {
+		AbstractDocument doc = docBuilder(message);
+		return JSONObject.toJSONString(doc);
 	}
 
 	@SuppressWarnings("finally")
@@ -440,6 +561,8 @@ public class DocumentBuilder {
 		try {
 			driver = BrowserFactory.createWindowsPhantomJS();
 			driver.get(message.getUrl());
+			WebDriverWait wait = new WebDriverWait(driver, 30);
+			wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
 			sources = driver.getPageSource();
 			message.setType(ExplainTypeEnum._buildDocument);
 			message.setContent(sources);
@@ -455,7 +578,8 @@ public class DocumentBuilder {
 	}
 
 	public static void main(String[] args) throws Throwable {
-
+		String url = "/asdfasdfas/asdf/asdf";
+		System.out.println(url.matches(HtmlRegexConsts.DOMAIN));
 	}
 
 }

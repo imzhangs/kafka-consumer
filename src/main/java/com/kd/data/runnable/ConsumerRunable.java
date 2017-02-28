@@ -2,13 +2,16 @@ package com.kd.data.runnable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kd.browersearch.domain.BrowserSearchDoc;
 import com.kd.commons.domain.KafkaMessage;
 import com.kd.commons.http.HttpRequestUtil;
 import com.kd.data.docbuliders.DocumentBuilder;
@@ -27,6 +30,14 @@ public class ConsumerRunable<K, V> implements Runnable {
 	String indexSaveUrl;
 	
 	SendMQBuilder sendMQBuilder;
+
+	public SendMQBuilder getSendMQBuilder() {
+		return sendMQBuilder;
+	}
+
+	public void setSendMQBuilder(SendMQBuilder sendMQBuilder) {
+		this.sendMQBuilder = sendMQBuilder;
+	}
 
 	public String getContentKeyRegexs() {
 		return contentKeyRegexs;
@@ -72,8 +83,8 @@ public class ConsumerRunable<K, V> implements Runnable {
 					: jsonStr);
 			KafkaMessage message = JSONObject.parseObject(jsonStr, KafkaMessage.class);
 			try {
-				if (message == null || message.getContent().contains("typeerror: null is not an object")) {
-					logger.error("explain failed, message typeerror !!!!");
+				if (message == null  ) {
+					logger.error("explain failed, message url error !!!!");
 					continue;
 				}
 				
@@ -109,48 +120,39 @@ public class ConsumerRunable<K, V> implements Runnable {
 	 * 
 	 * @param message
 	 */
+
 	public void explain(KafkaMessage message) {
-
-	}
-
-	public void explainTempFileAndSave(KafkaMessage message) {
-		if (message == null || StringUtils.isBlank(message.getTempFilePath())) {
-			log.error("kafka consumer received message is null...");
-			return ;
-		}
-		String filepath=message.getTempFilePath();
-		File tempFile = new File(filepath);
-		if (!tempFile.exists()) {
-			log.error("tempFile does not exists !!! path ={}",filepath);
-			return ;
-		}
-
-		// 后期考虑 DFS
+	
 		try {
-			String content = FileUtils.readFileToString(new File(filepath), "utf-8");
-			if(StringUtils.isBlank(content)){
-				log.warn("tempFile conetnt is empty ... with path={}",filepath);
-			}
 			switch(message.getType()){
 			case _default:
 			case _buildDocument:
 				////文档解析	
 				{
-					Object saveDoc=null;
+					if(null==message.getBuildDocType()){
+						log.error(" message.getBuildDocType() is null !!!");
+						break;
+					}
+					String saveDoc="";
 					switch(message.getBuildDocType()){
 					case newsDoc:
-						saveDoc = DocumentBuilder.browserSearchDocBuild(message.getUrl(), content);
+						NewsDoc newsDoc = DocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
+						saveDoc=JSONObject.toJSONString(newsDoc);
 						break;
 					case topicDoc:
-						saveDoc = DocumentBuilder.defaultNewsDocBuild(message.getUrl(), content);
+						BrowserSearchDoc searchDoc = DocumentBuilder.browserSearchDocBuild(message.getUrl(), message.getContent(),true);
+						saveDoc=JSONObject.toJSONString(searchDoc);
 						break;
 					case weixinGzhDoc:
+						saveDoc=DocumentBuilder.docBuilderString(message);
 						break;
 					default:
 						break;
 					}
-					String saveResult=HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(saveDoc));
-					log.debug("saved successfully ! sources =>>{}",saveResult);
+					String saveResult=HttpRequestUtil.postJSON(indexSaveUrl, saveDoc);
+					String date=DateFormatUtils.format(new Date(), "yyyyMMddHH");
+					FileUtils.writeStringToFile(new File("/data/logs/"+date+"/saveResult.log"),saveDoc+"\n", "utf-8", true);
+					log.info("======================>>>saved successfully ! sources =>>{}",saveResult);
 				}
 				break;
 			case _requestURL:
@@ -158,9 +160,19 @@ public class ConsumerRunable<K, V> implements Runnable {
 				sendMQBuilder.sendMessgae(message);
 				break;
 			case _tempSegements:
-				//TODO HDFS
-				String htmlSources=FileUtils.readFileToString(new File(message.getTempFilePath()),"utf-8");
-				sendMQBuilder.urlExplainAndSend(htmlSources);
+				//TODO 	// 后期考虑 DFS
+				String filepath=message.getTempFilePath();
+				File tempFile = new File(filepath);
+				if (!tempFile.exists()) {
+					log.error("tempFile does not exists !!! path ={}",filepath);
+					return ;
+				}
+				String content = FileUtils.readFileToString(new File(filepath), "utf-8");
+				if(StringUtils.isBlank(content)){
+					log.warn("tempFile conetnt is empty ... with path={}",filepath);
+				}else{
+					sendMQBuilder.urlExplainAndSend(content,message.getBuildDocType());
+				}
 				break;
 			case _customer:
 				break;
