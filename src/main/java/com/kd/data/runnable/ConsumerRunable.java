@@ -11,15 +11,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kd.browersearch.domain.BrowserSearchDoc;
 import com.kd.commons.domain.KafkaMessage;
 import com.kd.commons.http.HttpRequestUtil;
 import com.kd.data.docbuliders.DocumentBuilder;
+import com.kd.data.docbuliders.NewsDocumentBuilder;
 import com.kd.data.docbuliders.SendMQBuilder;
 import com.kd.news.domain.NewsDoc;
 
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
+import redis.clients.jedis.Jedis;
 
 public class ConsumerRunable<K, V> implements Runnable {
 
@@ -30,6 +31,16 @@ public class ConsumerRunable<K, V> implements Runnable {
 	String indexSaveUrl;
 	
 	SendMQBuilder sendMQBuilder;
+	
+	Jedis jedis;
+
+	public Jedis getJedis() {
+		return jedis;
+	}
+
+	public void setJedis(Jedis jedis) {
+		this.jedis = jedis;
+	}
 
 	public SendMQBuilder getSendMQBuilder() {
 		return sendMQBuilder;
@@ -107,8 +118,8 @@ public class ConsumerRunable<K, V> implements Runnable {
 		if (null == message || StringUtils.isBlank(message.getContent())) {
 			return null;
 		}
-
-		NewsDoc newsDoc = DocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
+		
+		NewsDoc newsDoc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
 		if (message.isSaveToIndex()) {
 			HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(newsDoc));
 		}
@@ -128,32 +139,20 @@ public class ConsumerRunable<K, V> implements Runnable {
 			case _default:
 			case _buildDocument:
 				////文档解析	
-				{
-					if(null==message.getBuildDocType()){
-						log.error(" message.getBuildDocType() is null !!!");
-						break;
-					}
-					String saveDoc="";
-					switch(message.getBuildDocType()){
-					case newsDoc:
-						NewsDoc newsDoc = DocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
-						saveDoc=JSONObject.toJSONString(newsDoc);
-						break;
-					case topicDoc:
-						BrowserSearchDoc searchDoc = DocumentBuilder.browserSearchDocBuild(message.getUrl(), message.getContent(),true);
-						saveDoc=JSONObject.toJSONString(searchDoc);
-						break;
-					case weixinGzhDoc:
-						saveDoc=DocumentBuilder.docBuilderString(message);
-						break;
-					default:
-						break;
-					}
-					String saveResult=HttpRequestUtil.postJSON(indexSaveUrl, saveDoc);
-					String date=DateFormatUtils.format(new Date(), "yyyyMMddHH");
-					FileUtils.writeStringToFile(new File("/data/logs/"+date+"/saveResult.log"),saveDoc+"\n", "utf-8", true);
-					log.info("======================>>>saved successfully ! sources =>>{}",saveResult);
+				if(null==message.getBuildDocType()){
+					log.error(" message.getBuildDocType() is null !!!");
+					break;
 				}
+				String saveDoc=DocumentBuilder.docBuilderString(message);
+				if(StringUtils.isBlank(saveDoc)){
+					log.error(" saveDoc body  is null !!!");
+					break;
+				}
+				String saveResult=HttpRequestUtil.postJSON(indexSaveUrl, saveDoc);
+				String date=DateFormatUtils.format(new Date(), "yyyyMMddHH");
+				FileUtils.writeStringToFile(new File("/data/logs/"+date+"/saveResult.log"),saveDoc+"\n", "utf-8", true);
+				log.info("======================>>>saved successfully ! sources =>>{}",saveResult);
+				
 				break;
 			case _requestURL:
 				message=DocumentBuilder.buildSource(message);
@@ -180,10 +179,11 @@ public class ConsumerRunable<K, V> implements Runnable {
 				break;
 			
 			}
-			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally{
+			
 		}
 
 	}
