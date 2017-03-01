@@ -13,7 +13,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kd.commons.consts.HtmlRegexConsts;
@@ -24,12 +23,9 @@ import com.kd.commons.enums.ExplainTypeEnum;
 import com.kd.commons.http.browser.BrowserFactory;
 import com.kd.commons.utils.MD5Util;
 
-@Component
 public class DocumentBuilder {
 
 	static Logger logger = LoggerFactory.getLogger(DocumentBuilder.class);
-
-
 
 
 	public static AbstractDocument docBuilder(KafkaMessage message) {
@@ -98,7 +94,7 @@ public class DocumentBuilder {
 			return doc;
 		}
 		
-		String tempFilePath = "/data/htmlsource/" + DateFormatUtils.format(new Date(), StringFormatConsts.DATE_NUMBER_FORMAT)+"/";
+		String tempFilePath = "/home/data/weixingzhDoc/" + DateFormatUtils.format(new Date(), StringFormatConsts.DATE_NUMBER_FORMAT)+"/";
 		tempFilePath = tempFilePath + MD5Util.MD5(message.getUrl());
 		try {
 			FileUtils.writeStringToFile(new File(tempFilePath), JSONObject.toJSONString(doc), "utf-8", false);

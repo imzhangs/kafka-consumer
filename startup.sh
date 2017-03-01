@@ -1,0 +1,1 @@
+nohup java -cp /u01/app/apps/kafka_service/kafka-consumer-bin/kafka-consumer.jar com.kd.data.KafkaConsumerServiceApp >/dev/null 2>&1 &
