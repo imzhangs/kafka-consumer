@@ -20,7 +20,6 @@ import com.kd.news.domain.NewsDoc;
 
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
-import redis.clients.jedis.Jedis;
 
 public class ConsumerRunable<K, V> implements Runnable {
 
@@ -32,15 +31,6 @@ public class ConsumerRunable<K, V> implements Runnable {
 	
 	SendMQBuilder sendMQBuilder;
 	
-	Jedis jedis;
-
-	public Jedis getJedis() {
-		return jedis;
-	}
-
-	public void setJedis(Jedis jedis) {
-		this.jedis = jedis;
-	}
 
 	public SendMQBuilder getSendMQBuilder() {
 		return sendMQBuilder;

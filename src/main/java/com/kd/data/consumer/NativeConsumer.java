@@ -16,7 +16,6 @@ import com.kd.data.runnable.ConsumerRunable;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
-import redis.clients.jedis.Jedis;
 
 @Component
 public class NativeConsumer {
@@ -48,9 +47,6 @@ public class NativeConsumer {
 	
 	@Autowired
 	SendMQBuilder	sendMQBuilder;
-	
-	@Autowired
-	Jedis jedis;
 	
 	
 	private ConsumerConnector consumer;
@@ -85,7 +81,6 @@ public class NativeConsumer {
 			consumer.setContentKeyRegexs(contentKeyRegexs);
 			consumer.setIndexSaveUrl(indexSaveUrl);
 			consumer.setSendMQBuilder(sendMQBuilder);
-			consumer.setJedis(jedis);
 			executor.submit(consumer);
 		}
 	}

@@ -1,7 +1,7 @@
 server.port: 10020
 kafka.server.hosts-ports: 192.168.1.221:9092,192.168.1.221:9093
 
-kafka.topic: xigua-main-1
+kafka.topic: asdfasdf
 topic.groupid: 1
 consume.thread.count: 10
 serializer.encoding: kafka.serializer.StringEncoder
