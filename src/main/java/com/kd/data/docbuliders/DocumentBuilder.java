@@ -2,11 +2,10 @@ package com.kd.data.docbuliders;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -15,29 +14,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kd.browersearch.domain.BrowserSearchDoc;
+import com.kd.browersearch.domain.WeiboDoc;
 import com.kd.commons.consts.HtmlRegexConsts;
-import com.kd.commons.consts.StringFormatConsts;
-import com.kd.commons.domain.AbstractDocument;
 import com.kd.commons.domain.KafkaMessage;
 import com.kd.commons.enums.ExplainTypeEnum;
+import com.kd.commons.http.HttpRequestUtil;
 import com.kd.commons.http.browser.BrowserFactory;
-import com.kd.commons.utils.MD5Util;
+import com.kd.news.domain.NewsDoc;
 
 public class DocumentBuilder {
 
-	static Logger logger = LoggerFactory.getLogger(DocumentBuilder.class);
+	static Logger log = LoggerFactory.getLogger(DocumentBuilder.class);
 
+	public static String weiboSaveIndex;
+	public static String weixinSaveIndex;
+	public static String weixinSaveDB;
+	public static String weiboSaveDB;
 
-	public static AbstractDocument docBuilder(KafkaMessage message) {
-		AbstractDocument doc = null;
+	public static void docBuilderAndSave(KafkaMessage message) {
 		if (message == null) {
-			return doc;
+			return;
 		}
 		if (message.getUrl() == null) {
-			return doc;
+			return;
 		}
 		if (message.getBuildDocType() == null) {
-			return doc;
+			return;
 		}
 
 		if (StringUtils.isBlank(message.getContent())) {
@@ -60,7 +63,7 @@ public class DocumentBuilder {
 					wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
 					sources = driver.getPageSource();
 				} catch (Throwable e) {
-					logger.error(e.getCause().toString());
+					log.error(e.getCause().toString());
 				} finally {
 					message.setContent(sources);
 					if (driver != null) {
@@ -71,55 +74,79 @@ public class DocumentBuilder {
 			}
 		}
 
+		String indexSaveUrl = "";
+		String dbSaveUrl = "";
+		String indexSaveResult ="";
+		String dbSaveResult = "";
 		if (StringUtils.isNotBlank(message.getContent()) && message.getBuildDocType() != null) {
-
+		
 			switch (message.getBuildDocType()) {
 			case newsDoc:
-				doc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
+				NewsDoc newsDoc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
+				
+				//indexURL ??
+				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(newsDoc));
 				break;
 			case topicDoc:
-				doc = BrowserDocumentBuilder.browserSearchDocBuild(message.getUrl(), message.getContent(), true);
+				BrowserSearchDoc browserSearchDoc = BrowserDocumentBuilder.browserSearchDocBuild(message.getUrl(),
+						message.getContent(), true);
+				
+				//indexURL ??
+				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(browserSearchDoc));
+				break;
+			case weiboDoc:
+				List<WeiboDoc> weibodocList = WeiboDocumentBuilder.weiboDocBuild(message.getUrl(), true);
+				
+				indexSaveUrl = weiboSaveIndex;
+				dbSaveUrl = weiboSaveDB;
+				
+				for(WeiboDoc weiboDoc:weibodocList){
+					indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(weiboDoc));
+					dbSaveResult = HttpRequestUtil.postJSON(dbSaveUrl, JSONObject.toJSONString(weiboDoc));
+					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
+					log.info("======================>>>weiboDoc saved {}  sources =>>{}", dbSaveResult, indexSaveResult);
+				}
 				break;
 			case weixinGzhDoc:
-				doc = WeixinGzhDocumentBuilder.browserWeixinGzhDocBuild(message.getUrl(), message.getContent(), true);
+				BrowserSearchDoc weixinGzhDoc = WeixinGzhDocumentBuilder.browserWeixinGzhDocBuild(message.getUrl(),
+						message.getContent(), true);
+				weixinGzhDoc.setJobId(30553);
+				indexSaveUrl = weixinSaveIndex;
+				dbSaveUrl = weixinSaveDB;
+				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(weixinGzhDoc));
+				dbSaveResult = HttpRequestUtil.postJSON(dbSaveUrl, JSONObject.toJSONString(weixinGzhDoc));
+				dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
+				log.info("======================>>>weixinGzhDoc saved {}  sources =>>{}", dbSaveResult, indexSaveResult);
 				break;
 			default:
 				break;
 			}
+			
 		} else {
-			logger.error("message content or buildDocType is null ....");
-		}
-		if(null==doc){
-			logger.error("doc is null .........");
-			return doc;
-		}
-		
-		String tempFilePath = "/home/data/weixingzhDoc/" + DateFormatUtils.format(new Date(), StringFormatConsts.DATE_NUMBER_FORMAT)+"/";
-		tempFilePath = tempFilePath + MD5Util.MD5(message.getUrl());
-		try {
-			FileUtils.writeStringToFile(new File(tempFilePath), JSONObject.toJSONString(doc), "utf-8", false);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}finally{
-			//分词切割
-//			List<Word> wordList = new ArrayList<Word>();
-//			if (jedis != null) {
-//				wordList = WordSegmenter.seg(value.htmlContent, SegmentationAlgorithm.BidirectionalMaximumMatching);
-//				for (Word w : wordList) {
-//					jedis.sadd("redis-words", w.getText());
-//				}
-//			}
+			log.error("message content or buildDocType is null ....");
 		}
 
-		return doc;
-	}
+		// String tempFilePath = "/home/data/weixingzhDoc/" +
+		// DateFormatUtils.format(new Date(),
+		// StringFormatConsts.DATE_NUMBER_FORMAT)+"/";
+		// tempFilePath = tempFilePath + MD5Util.MD5(message.getUrl());
+		// try {
+		// FileUtils.writeStringToFile(new File(tempFilePath),
+		// JSONObject.toJSONString(doc), "utf-8", false);
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }finally{
+		// //分词切割
+		//// List<Word> wordList = new ArrayList<Word>();
+		//// if (jedis != null) {
+		//// wordList = WordSegmenter.seg(value.htmlContent,
+		// SegmentationAlgorithm.BidirectionalMaximumMatching);
+		//// for (Word w : wordList) {
+		//// jedis.sadd("redis-words", w.getText());
+		//// }
+		//// }
+		// }
 
-	public static String docBuilderString(KafkaMessage message) {
-		AbstractDocument doc = docBuilder(message);
-		if(doc==null){
-			return "";
-		}
-		return JSONObject.toJSONString(doc);
 	}
 
 	@SuppressWarnings("finally")
@@ -134,7 +161,7 @@ public class DocumentBuilder {
 			// TODO HDFS
 			FileUtils.writeStringToFile(new File(message.getTempFilePath()), sources, "utf-8", false);
 		} catch (Throwable e) {
-			logger.error(e.getCause().toString());
+			log.error(e.getCause().toString());
 		} finally {
 			if (driver != null) {
 				driver.close();
@@ -157,7 +184,7 @@ public class DocumentBuilder {
 			message.setType(ExplainTypeEnum._buildDocument);
 			message.setContent(sources);
 		} catch (Throwable e) {
-			logger.error(e.getCause().toString());
+			log.error(e.getCause().toString());
 		} finally {
 			if (driver != null) {
 				driver.close();

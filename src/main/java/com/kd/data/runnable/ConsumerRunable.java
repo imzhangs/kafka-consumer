@@ -2,10 +2,10 @@ package com.kd.data.runnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,14 +23,45 @@ import kafka.consumer.KafkaStream;
 
 public class ConsumerRunable<K, V> implements Runnable {
 
+
 	static Logger log = LoggerFactory.getLogger(ConsumerRunable.class);
 
 	String contentKeyRegexs;
 
-	String indexSaveUrl;
+	String weixinGzhIndexSaveUrl;
+	
+	String weiboIndexSaveUrl;
 	
 	SendMQBuilder sendMQBuilder;
 	
+	String dbSaveUrl;
+	
+	
+	
+
+	public String getWeixinGzhIndexSaveUrl() {
+		return weixinGzhIndexSaveUrl;
+	}
+
+	public void setWeixinGzhIndexSaveUrl(String weixinGzhIndexSaveUrl) {
+		this.weixinGzhIndexSaveUrl = weixinGzhIndexSaveUrl;
+	}
+
+	public String getWeiboIndexSaveUrl() {
+		return weiboIndexSaveUrl;
+	}
+
+	public void setWeiboIndexSaveUrl(String weiboIndexSaveUrl) {
+		this.weiboIndexSaveUrl = weiboIndexSaveUrl;
+	}
+
+	public String getDbSaveUrl() {
+		return dbSaveUrl;
+	}
+
+	public void setDbSaveUrl(String dbSaveUrl) {
+		this.dbSaveUrl = dbSaveUrl;
+	}
 
 	public SendMQBuilder getSendMQBuilder() {
 		return sendMQBuilder;
@@ -47,16 +78,6 @@ public class ConsumerRunable<K, V> implements Runnable {
 	public void setContentKeyRegexs(String contentKeyRegexs) {
 		this.contentKeyRegexs = contentKeyRegexs;
 	}
-
-	public String getIndexSaveUrl() {
-		return indexSaveUrl;
-	}
-
-	public void setIndexSaveUrl(String indexSaveUrl) {
-		this.indexSaveUrl = indexSaveUrl;
-	}
-
-	Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private KafkaStream<K, V> dataStream;
 
@@ -80,12 +101,12 @@ public class ConsumerRunable<K, V> implements Runnable {
 		String jsonStr = "{}";
 		while (it.hasNext()) {
 			jsonStr = new String((byte[]) it.next().message());
-			logger.info("consume >> : " + jsonStr != null && jsonStr.length() > 128 ? jsonStr.substring(0, 128) + "..."
+			log.info("consume >> : " + jsonStr != null && jsonStr.length() > 128 ? jsonStr.substring(0, 128) + "..."
 					: jsonStr);
 			KafkaMessage message = JSONObject.parseObject(jsonStr, KafkaMessage.class);
 			try {
 				if (message == null  ) {
-					logger.error("explain failed, message url error !!!!");
+					log.error("explain failed, message url error !!!!");
 					continue;
 				}
 				
@@ -111,7 +132,7 @@ public class ConsumerRunable<K, V> implements Runnable {
 		
 		NewsDoc newsDoc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
 		if (message.isSaveToIndex()) {
-			HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(newsDoc));
+			HttpRequestUtil.postJSON(weixinGzhIndexSaveUrl, JSONObject.toJSONString(newsDoc));
 		}
 		return newsDoc;
 	}
@@ -133,16 +154,12 @@ public class ConsumerRunable<K, V> implements Runnable {
 					log.error(" message.getBuildDocType() is null !!!");
 					break;
 				}
-				String saveDoc=DocumentBuilder.docBuilderString(message);
-				if(StringUtils.isBlank(saveDoc)){
-					log.error(" saveDoc body  is null !!!");
-					break;
-				}
-				String saveResult=HttpRequestUtil.postJSON(indexSaveUrl, saveDoc);
-				String date=DateFormatUtils.format(new Date(), "yyyyMMddHH");
-				FileUtils.writeStringToFile(new File("/data/logs/"+date+"/saveResult.log"),saveDoc+"\n", "utf-8", true);
-				log.info("======================>>>saved successfully ! sources =>>{}",saveResult);
+				DocumentBuilder.weixinSaveIndex=weixinGzhIndexSaveUrl;
+				DocumentBuilder.weixinSaveDB=dbSaveUrl;
+				DocumentBuilder.weiboSaveIndex=weiboIndexSaveUrl;
+				DocumentBuilder.weiboSaveDB=dbSaveUrl;
 				
+				DocumentBuilder.docBuilderAndSave(message);
 				break;
 			case _requestURL:
 				message=DocumentBuilder.buildSource(message);

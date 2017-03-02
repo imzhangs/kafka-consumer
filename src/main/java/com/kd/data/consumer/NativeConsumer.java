@@ -35,8 +35,14 @@ public class NativeConsumer {
 	@Value("${content.key.Regexs}")
 	String contentKeyRegexs;
 
-	@Value("${index.save.url}")
-	String indexSaveUrl;
+	@Value("${weixin.index.save.url}")
+	String weixinIndexSaveUrl;
+	
+	@Value("${weibo.index.save.url}")
+	String weiboIndexSaveUrl;
+	
+	@Value("${db.save.url}")
+	String dbSaveUrl;
 	
 
 	@Value("${consume.thread.count}")
@@ -79,8 +85,10 @@ public class NativeConsumer {
 		for (final KafkaStream<byte[], byte[]> stream : streams) {
 			ConsumerRunable<byte[], byte[]> consumer=	new ConsumerRunable<>(stream);
 			consumer.setContentKeyRegexs(contentKeyRegexs);
-			consumer.setIndexSaveUrl(indexSaveUrl);
+			consumer.setWeixinGzhIndexSaveUrl(weixinIndexSaveUrl);
+			consumer.setWeiboIndexSaveUrl(weiboIndexSaveUrl);
 			consumer.setSendMQBuilder(sendMQBuilder);
+			consumer.setDbSaveUrl(dbSaveUrl);
 			executor.submit(consumer);
 		}
 	}
