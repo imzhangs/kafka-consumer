@@ -2,8 +2,6 @@ package com.kd.data.runnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,39 +26,57 @@ public class ConsumerRunable<K, V> implements Runnable {
 
 	String contentKeyRegexs;
 
-	String weixinGzhIndexSaveUrl;
-	
-	String weiboIndexSaveUrl;
-	
 	SendMQBuilder sendMQBuilder;
 	
-	String dbSaveUrl;
+
+	public String getPhantomJSPath() {
+		return DocumentBuilder.phantomJSPath;
+	}
+
+	public void setPhantomJSPath(String phantomJSPath) {
+		DocumentBuilder.phantomJSPath=phantomJSPath;
+	}
+
+	public String getWindowsPhantomJSPath() {
+		return DocumentBuilder.windowsPhantomJSPath;
+	}
+
+	public void setWindowsPhantomJSPath(String windowsPhantomJSPath) {
+		DocumentBuilder.windowsPhantomJSPath=windowsPhantomJSPath;
+	}
+
 	
-	
-	
+	public String getWeiboSaveDBUrl() {
+		return DocumentBuilder.weiboSaveDB;
+	}
+
+	public void setWeiboSaveDBUrl(String weiboSaveDBUrl) {
+		DocumentBuilder.weiboSaveDB=weiboSaveDBUrl;
+	}
 
 	public String getWeixinGzhIndexSaveUrl() {
-		return weixinGzhIndexSaveUrl;
+		return DocumentBuilder.weixinSaveIndex;
 	}
 
 	public void setWeixinGzhIndexSaveUrl(String weixinGzhIndexSaveUrl) {
-		this.weixinGzhIndexSaveUrl = weixinGzhIndexSaveUrl;
+		DocumentBuilder.weixinSaveIndex=weixinGzhIndexSaveUrl;
+		
 	}
 
 	public String getWeiboIndexSaveUrl() {
-		return weiboIndexSaveUrl;
+		return DocumentBuilder.weiboSaveIndex;
 	}
 
 	public void setWeiboIndexSaveUrl(String weiboIndexSaveUrl) {
-		this.weiboIndexSaveUrl = weiboIndexSaveUrl;
+		DocumentBuilder.weiboSaveIndex=weiboIndexSaveUrl;
 	}
 
 	public String getDbSaveUrl() {
-		return dbSaveUrl;
+		return DocumentBuilder.weixinSaveDB;
 	}
 
 	public void setDbSaveUrl(String dbSaveUrl) {
-		this.dbSaveUrl = dbSaveUrl;
+		DocumentBuilder.weixinSaveDB=dbSaveUrl;
 	}
 
 	public SendMQBuilder getSendMQBuilder() {
@@ -132,7 +148,7 @@ public class ConsumerRunable<K, V> implements Runnable {
 		
 		NewsDoc newsDoc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
 		if (message.isSaveToIndex()) {
-			HttpRequestUtil.postJSON(weixinGzhIndexSaveUrl, JSONObject.toJSONString(newsDoc));
+			HttpRequestUtil.postJSON(getWeixinGzhIndexSaveUrl(), JSONObject.toJSONString(newsDoc));
 		}
 		return newsDoc;
 	}
@@ -144,7 +160,7 @@ public class ConsumerRunable<K, V> implements Runnable {
 	 */
 
 	public void explain(KafkaMessage message) {
-	
+		
 		try {
 			switch(message.getType()){
 			case _default:
@@ -154,11 +170,6 @@ public class ConsumerRunable<K, V> implements Runnable {
 					log.error(" message.getBuildDocType() is null !!!");
 					break;
 				}
-				DocumentBuilder.weixinSaveIndex=weixinGzhIndexSaveUrl;
-				DocumentBuilder.weixinSaveDB=dbSaveUrl;
-				DocumentBuilder.weiboSaveIndex=weiboIndexSaveUrl;
-				DocumentBuilder.weiboSaveDB=dbSaveUrl;
-				
 				DocumentBuilder.docBuilderAndSave(message);
 				break;
 			case _requestURL:

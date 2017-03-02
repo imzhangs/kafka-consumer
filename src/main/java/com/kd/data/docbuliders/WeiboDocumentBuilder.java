@@ -24,27 +24,27 @@ import org.slf4j.LoggerFactory;
 
 import com.kd.browersearch.domain.WeiboDoc;
 import com.kd.commons.consts.StringFormatConsts;
+import com.kd.commons.domain.KafkaMessage;
 import com.kd.commons.enums.BuildDocTypeEnum;
-import com.kd.commons.http.browser.BrowserFactory;
 import com.kd.commons.utils.MD5Util;
 
 public class WeiboDocumentBuilder {
 	static Logger logger = LoggerFactory.getLogger(WeiboDocumentBuilder.class);
 
 	/**
-	 * 微信公众号 文档实体
+	 * 对  http://m.weibo.cn/u/xxxx 解析有效
 	 * 
 	 * @param url
 	 * @param htmlSources
 	 * @return
 	 */
 	@SuppressWarnings("finally")
-	public static List<WeiboDoc> weiboDocBuild(String url, boolean isPlainText) {
+	public static List<WeiboDoc> weiboDocBuild(KafkaMessage message, boolean isPlainText) {
+		String url=message.getUrl();
 		List<WeiboDoc> weiboList=new ArrayList<>();
 		WebDriver driver = null;
 		try {
-			String exePath="F:/chromedriver.exe";
-			driver = BrowserFactory.createChrome(exePath);
+			driver = DocumentBuilder.getWebDriver();
 			//请求个人主页
 			driver.get(url);
 			Thread.sleep(10000);
@@ -85,17 +85,21 @@ public class WeiboDocumentBuilder {
 			int like = 0;
 			String device = "";
 			int authorId=0;
+			String attentions = "0";
+			String fans = "0";
+			String signMind = "0";
+			try{
+				attentions = driver
+						.findElement(By.xpath("//div[@class='mod-fil-fans']//a[contains(text(), '关注')]//span")).getText();
+			}catch(Throwable e){}
 
-			String attentions = driver
-					.findElement(By.xpath("//div[@class='mod-fil-fans']//a[contains(text(), '关注')]//span")).getText();
-
-			String fans = driver.findElement(By.xpath("//div[@class='mod-fil-fans']//a[contains(text(), '粉丝')]//span"))
-					.getText();
-
-			String signMind = appCardEle
+			try{
+				fans = driver.findElement(By.xpath("//div[@class='mod-fil-fans']//a[contains(text(), '粉丝')]//span")).getText();
+			}catch(Throwable e){}
+			try{
+			 signMind = appCardEle
 					.findElement(By.xpath("//div[@class='profile-cover']//div[@class='item-list']//p")).getText();
-
-			System.out.println(attentions + "," + fans + "," + signMind);
+			}catch(Throwable e){}
 
 			Document doc = Jsoup.parse(appCardEle.getAttribute("innerHTML"));
 			Elements els = doc.getElementsByClass("m-panel");
@@ -150,7 +154,7 @@ public class WeiboDocumentBuilder {
 				+ "," + comment + "," + like + "," + device;
 				weiboDocId=StringUtils.isBlank(weiboDocId)?MD5Util.MD5(docText):"";
 				
-				System.out.println(docText);
+				weiboDoc.setId(weiboDocId);
 				weiboDoc.setAuthor(author);
 				weiboDoc.setAuthorId(authorId);
 				weiboDoc.setClickNum(like);
@@ -164,6 +168,10 @@ public class WeiboDocumentBuilder {
 				weiboDoc.setSignMind(signMind);
 				weiboDoc.setUrl(url);
 				weiboDoc.setJobId(30552);
+				weiboDoc.setDate(Long.valueOf(DateFormatUtils.format(new Date(), StringFormatConsts.DATE_HOUR_NUMBER_FORMAT)));
+				weiboDoc.setJobId(message.getSourceId());
+				weiboDoc.setLevel(message.getLevel());
+				
 				weiboList.add(weiboDoc);
 			}
 
@@ -221,7 +229,10 @@ public class WeiboDocumentBuilder {
 
 	public static void main(String[] args) {
 		String url = "http://m.weibo.cn/u/2775583835";
-		weiboDocBuild(url, true);
+		KafkaMessage message=new KafkaMessage();
+		
+		message.setUrl(url);
+		weiboDocBuild(message, true);
 
 		// String time=getWeiboFullPublishTime("16分钟前");
 		// System.out.println(time);

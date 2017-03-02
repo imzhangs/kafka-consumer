@@ -31,6 +31,17 @@ public class DocumentBuilder {
 	public static String weixinSaveIndex;
 	public static String weixinSaveDB;
 	public static String weiboSaveDB;
+	
+	public static String phantomJSPath;
+	public static String windowsPhantomJSPath;
+	
+	public static WebDriver getWebDriver(){
+		if(System.getProperty("os.name").toLowerCase().contains("windows")){
+			phantomJSPath=windowsPhantomJSPath;
+		}
+		return  BrowserFactory.createPhantomJS(phantomJSPath);
+	}
+	
 
 	public static void docBuilderAndSave(KafkaMessage message) {
 		if (message == null) {
@@ -53,25 +64,11 @@ public class DocumentBuilder {
 					e.printStackTrace();
 				}
 			}
-
-			if (StringUtils.isBlank(message.getContent())) {
-				WebDriver driver = null;
-				try {
-					driver = BrowserFactory.createWindowsPhantomJS();
-					driver.get(message.getUrl());
-					WebDriverWait wait = new WebDriverWait(driver, 30);
-					wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
-					sources = driver.getPageSource();
-				} catch (Throwable e) {
-					log.error(e.getCause().toString());
-				} finally {
-					message.setContent(sources);
-					if (driver != null) {
-						driver.close();
-						driver.quit();
-					}
-				}
-			}
+		}
+		
+		if (StringUtils.isBlank(message.getContent())) {
+			buildSource(message);
+			return ;
 		}
 
 		String indexSaveUrl = "";
@@ -95,21 +92,21 @@ public class DocumentBuilder {
 				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(browserSearchDoc));
 				break;
 			case weiboDoc:
-				List<WeiboDoc> weibodocList = WeiboDocumentBuilder.weiboDocBuild(message.getUrl(), true);
+				List<WeiboDoc> weibodocList = WeiboDocumentBuilder.weiboDocBuild(message, true);
 				
 				indexSaveUrl = weiboSaveIndex;
 				dbSaveUrl = weiboSaveDB;
 				
 				for(WeiboDoc weiboDoc:weibodocList){
+					
 					indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(weiboDoc));
-					dbSaveResult = HttpRequestUtil.postJSON(dbSaveUrl, JSONObject.toJSONString(weiboDoc));
+					dbSaveResult =HttpRequestUtil.postJSON(weiboSaveDB, JSONObject.toJSONString(weiboDoc));
 					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
 					log.info("======================>>>weiboDoc saved {}  sources =>>{}", dbSaveResult, indexSaveResult);
 				}
 				break;
 			case weixinGzhDoc:
-				BrowserSearchDoc weixinGzhDoc = WeixinGzhDocumentBuilder.browserWeixinGzhDocBuild(message.getUrl(),
-						message.getContent(), true);
+				BrowserSearchDoc weixinGzhDoc = WeixinGzhDocumentBuilder.browserWeixinGzhDocBuild(message, true);
 				weixinGzhDoc.setJobId(30553);
 				indexSaveUrl = weixinSaveIndex;
 				dbSaveUrl = weixinSaveDB;
@@ -174,9 +171,8 @@ public class DocumentBuilder {
 	@SuppressWarnings("finally")
 	public static KafkaMessage buildSource(KafkaMessage message) {
 		String sources = "";
-		WebDriver driver = null;
+		WebDriver driver = getWebDriver();
 		try {
-			driver = BrowserFactory.createWindowsPhantomJS();
 			driver.get(message.getUrl());
 			WebDriverWait wait = new WebDriverWait(driver, 30);
 			wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));

@@ -27,7 +27,7 @@ public class NativeConsumer {
 	String groupId;
 
 	@Value("${kafka.topic}")
-	String topic;
+	public String topic;
 	
 	@Value("${serializer.encoding}")
 	String encoding;
@@ -41,10 +41,18 @@ public class NativeConsumer {
 	@Value("${weibo.index.save.url}")
 	String weiboIndexSaveUrl;
 	
-	@Value("${db.save.url}")
-	String dbSaveUrl;
+	@Value("${weibo.db.save.url}")
+	String weiboSaveDBUrl;
 	
-
+	@Value("${weixinGzh.db.save.url}")
+	String wxGzhSaveDBUrl;
+	
+	@Value("${phantomJS.path}")
+	String phantomJSPath;
+	
+	@Value("${phantomJS.windows.path}")
+	String windowsPhantomJSPath;
+	
 	@Value("${consume.thread.count}")
 	int consumeAnalyseThreads;
 
@@ -87,8 +95,11 @@ public class NativeConsumer {
 			consumer.setContentKeyRegexs(contentKeyRegexs);
 			consumer.setWeixinGzhIndexSaveUrl(weixinIndexSaveUrl);
 			consumer.setWeiboIndexSaveUrl(weiboIndexSaveUrl);
+			consumer.setWeiboSaveDBUrl(weiboSaveDBUrl);
 			consumer.setSendMQBuilder(sendMQBuilder);
-			consumer.setDbSaveUrl(dbSaveUrl);
+			consumer.setDbSaveUrl(wxGzhSaveDBUrl);
+			consumer.setPhantomJSPath(phantomJSPath);
+			consumer.setWindowsPhantomJSPath(windowsPhantomJSPath);
 			executor.submit(consumer);
 		}
 	}

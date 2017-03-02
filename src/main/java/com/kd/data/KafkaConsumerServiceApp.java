@@ -32,6 +32,7 @@ public class KafkaConsumerServiceApp {
 		NativeConsumer consumer=applicationContext.getBean(NativeConsumer.class);
 		consumer.init();
 		Thread.sleep(3000);
+		consumer.topic="weibo-account";
 		consumer.consume();
 	}
 	

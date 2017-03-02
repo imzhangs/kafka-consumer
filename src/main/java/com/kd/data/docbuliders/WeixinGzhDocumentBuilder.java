@@ -16,6 +16,7 @@ import com.kd.browersearch.domain.BrowserSearchDoc;
 import com.kd.commons.consts.HtmlContentConsts;
 import com.kd.commons.consts.HtmlRegexConsts;
 import com.kd.commons.consts.StringFormatConsts;
+import com.kd.commons.domain.KafkaMessage;
 import com.kd.commons.utils.MD5Util;
 
 public class WeixinGzhDocumentBuilder {
@@ -28,10 +29,17 @@ public class WeixinGzhDocumentBuilder {
 	 * @param htmlSources
 	 * @return
 	 */
-	public static BrowserSearchDoc browserWeixinGzhDocBuild(String url, String htmlSources, boolean isPlainText) {
+	public static BrowserSearchDoc browserWeixinGzhDocBuild(KafkaMessage message, boolean isPlainText) {
+		
+
+		String url =message.getUrl() ;
+		String htmlSources=message.getContent();
+		
 		if (StringUtils.isBlank(htmlSources)) {
 			return null;
 		}
+		
+		
 		BrowserSearchDoc browserSearchDoc = new BrowserSearchDoc();
 		Document doc = Jsoup.parse(htmlSources);
 		// title
@@ -51,7 +59,6 @@ public class WeixinGzhDocumentBuilder {
 			publishDate = doc.getElementById("post-date").text();
 			author = doc.getElementById("post-user").text();
 		} catch (Throwable e) {
-			logger.error(e.getCause().toString());
 		}
 
 		Map<String, ContentValue> contentMapping = new HashMap<String, ContentValue>();
@@ -124,12 +131,12 @@ public class WeixinGzhDocumentBuilder {
 		}
 		
 		// 装箱
+		browserSearchDoc.setAuthorAccount(message.getAuthor());
 		browserSearchDoc.setAuthor(author);
 		browserSearchDoc.setDomain(domain);
 		browserSearchDoc.setContent(StringUtils.isBlank(content) ? title : content);
 		browserSearchDoc.setPublishDate(publishDate);
-		browserSearchDoc
-				.setDate(Long.valueOf(DateFormatUtils.format(new Date(), StringFormatConsts.DATE_HOUR_NUMBER_FORMAT)));
+		browserSearchDoc.setDate(Long.valueOf(DateFormatUtils.format(new Date(), StringFormatConsts.DATE_HOUR_NUMBER_FORMAT)));
 		browserSearchDoc.setGroupId(groupId);
 		browserSearchDoc.setId(urlMD5);
 		browserSearchDoc.setTitle(title);
