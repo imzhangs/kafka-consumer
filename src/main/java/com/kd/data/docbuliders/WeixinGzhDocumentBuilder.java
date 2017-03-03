@@ -131,7 +131,6 @@ public class WeixinGzhDocumentBuilder {
 		}
 		
 		// 装箱
-		browserSearchDoc.setAuthorAccount(message.getAuthor());
 		browserSearchDoc.setAuthor(author);
 		browserSearchDoc.setDomain(domain);
 		browserSearchDoc.setContent(StringUtils.isBlank(content) ? title : content);
@@ -141,6 +140,10 @@ public class WeixinGzhDocumentBuilder {
 		browserSearchDoc.setId(urlMD5);
 		browserSearchDoc.setTitle(title);
 		browserSearchDoc.setUrl(url);
+		browserSearchDoc.setJobId(message.getSourceId());
+		browserSearchDoc.setAuthorAccount(message.getAuthor());
+		browserSearchDoc.setType(message.getTypeId());
+		
 		return browserSearchDoc;
 	}
 

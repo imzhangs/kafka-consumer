@@ -173,6 +173,7 @@ public class ConsumerRunable<K, V> implements Runnable {
 				DocumentBuilder.docBuilderAndSave(message);
 				break;
 			case _requestURL:
+				message.setUrl(message.getUrl().startsWith("http://")?message.getUrl():"http://"+message.getUrl());
 				message=DocumentBuilder.buildSource(message);
 				sendMQBuilder.sendMessgae(message);
 				break;

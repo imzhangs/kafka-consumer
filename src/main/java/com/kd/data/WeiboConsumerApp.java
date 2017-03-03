@@ -13,7 +13,7 @@ import com.kd.data.consumer.NativeConsumer;
 
 
 @SpringBootApplication
-public class KafkaConsumerServiceApp {
+public class WeiboConsumerApp {
 	
 
 	@Value("${consume.thread.count}")
@@ -28,7 +28,7 @@ public class KafkaConsumerServiceApp {
 
 	
 	public static void main(String[] args) throws Exception {
-		final ApplicationContext applicationContext = SpringApplication.run(KafkaConsumerServiceApp.class, args);
+		final ApplicationContext applicationContext = SpringApplication.run(WeiboConsumerApp.class, args);
 		NativeConsumer consumer=applicationContext.getBean(NativeConsumer.class);
 		consumer.init();
 		Thread.sleep(3000);

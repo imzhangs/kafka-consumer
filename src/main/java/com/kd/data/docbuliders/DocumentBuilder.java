@@ -72,7 +72,6 @@ public class DocumentBuilder {
 		}
 
 		String indexSaveUrl = "";
-		String dbSaveUrl = "";
 		String indexSaveResult ="";
 		String dbSaveResult = "";
 		if (StringUtils.isNotBlank(message.getContent()) && message.getBuildDocType() != null) {
@@ -94,12 +93,10 @@ public class DocumentBuilder {
 			case weiboDoc:
 				List<WeiboDoc> weibodocList = WeiboDocumentBuilder.weiboDocBuild(message, true);
 				
-				indexSaveUrl = weiboSaveIndex;
-				dbSaveUrl = weiboSaveDB;
 				
 				for(WeiboDoc weiboDoc:weibodocList){
 					
-					indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(weiboDoc));
+					indexSaveResult = HttpRequestUtil.postJSON(weiboSaveIndex, JSONObject.toJSONString(weiboDoc));
 					dbSaveResult =HttpRequestUtil.postJSON(weiboSaveDB, JSONObject.toJSONString(weiboDoc));
 					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
 					log.info("======================>>>weiboDoc saved {}  sources =>>{}", dbSaveResult, indexSaveResult);
@@ -107,11 +104,11 @@ public class DocumentBuilder {
 				break;
 			case weixinGzhDoc:
 				BrowserSearchDoc weixinGzhDoc = WeixinGzhDocumentBuilder.browserWeixinGzhDocBuild(message, true);
-				weixinGzhDoc.setJobId(30553);
-				indexSaveUrl = weixinSaveIndex;
-				dbSaveUrl = weixinSaveDB;
-				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(weixinGzhDoc));
-				dbSaveResult = HttpRequestUtil.postJSON(dbSaveUrl, JSONObject.toJSONString(weixinGzhDoc));
+				if(weixinGzhDoc==null){
+					break;
+				}
+				indexSaveResult = HttpRequestUtil.postJSON(weixinSaveIndex, JSONObject.toJSONString(weixinGzhDoc));
+				dbSaveResult = HttpRequestUtil.postJSON(weixinSaveDB, JSONObject.toJSONString(weixinGzhDoc));
 				dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
 				log.info("======================>>>weixinGzhDoc saved {}  sources =>>{}", dbSaveResult, indexSaveResult);
 				break;
