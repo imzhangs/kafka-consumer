@@ -52,7 +52,7 @@ public class WeiboDocumentBuilder {
 			wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
 			
 			WebElement appCardEle =null;
-
+			
 			appCardEle = driver.findElement(By.xpath("//div[@id='app']//div//div"));
 			List<WebElement> contentList = appCardEle.findElements(By.className("m-panel"));
 
@@ -60,16 +60,18 @@ public class WeiboDocumentBuilder {
 			int tempSize = 1;
 			int iBreak = 0;
 			do {
-				appCardEle = driver.findElement(By.xpath("//div[@id='app']//div//div"));
-				contentList = appCardEle.findElements(By.className("m-panel"));
-				tempSize = contentList.size();
-				((JavascriptExecutor) driver).executeScript("scrollTo(0,9999)");
-				Thread.sleep(5000L);
-				if (tempSize > cardSize) {
-					cardSize = tempSize;
-				} else {
-					iBreak++;
-				}
+				try{
+					appCardEle = driver.findElement(By.xpath("//div[@id='app']//div//div"));
+					contentList = appCardEle.findElements(By.className("m-panel"));
+					tempSize = contentList.size();
+					((JavascriptExecutor) driver).executeScript("scrollTo(0,9999)");
+					Thread.sleep(5000L);
+					if (tempSize > cardSize) {
+						cardSize = tempSize;
+					} else {
+						iBreak++;
+					}
+				}catch(Throwable e){continue;}
 			} while(iBreak<3);
 
 			FileUtils.write(new File("/data/weiboTemp/" + MD5Util.MD5(url)), appCardEle.getAttribute("innerHTML"),
@@ -150,8 +152,7 @@ public class WeiboDocumentBuilder {
 				} catch (Throwable e) {
 				}
 
-				String docText=author + "," + weiboDocId + "," + publishDate + "," + contentText + "," + forward
-				+ "," + comment + "," + like + "," + device;
+				String docText=author + "," + weiboDocId + "," + publishDate + "," + contentText ;
 				weiboDocId=StringUtils.isBlank(weiboDocId)?MD5Util.MD5(docText):"";
 				
 				weiboDoc.setId(weiboDocId);
@@ -228,11 +229,11 @@ public class WeiboDocumentBuilder {
 	}
 
 	public static void main(String[] args) {
-		String url = "http://m.weibo.cn/u/2775583835";
-		KafkaMessage message=new KafkaMessage();
-		
-		message.setUrl(url);
-		weiboDocBuild(message, true);
+//		String url = "http://m.weibo.cn/u/2775583835";
+//		KafkaMessage message=new KafkaMessage();
+//		
+//		message.setUrl(url);
+//		weiboDocBuild(message, true);
 
 		// String time=getWeiboFullPublishTime("16分钟前");
 		// System.out.println(time);

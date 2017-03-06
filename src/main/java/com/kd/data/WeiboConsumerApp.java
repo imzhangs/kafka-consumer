@@ -31,7 +31,7 @@ public class WeiboConsumerApp {
 		final ApplicationContext applicationContext = SpringApplication.run(WeiboConsumerApp.class, args);
 		NativeConsumer consumer=applicationContext.getBean(NativeConsumer.class);
 		consumer.init();
-		Thread.sleep(3000);
+		Thread.sleep(5000);
 		consumer.topic="weibo-account";
 		consumer.consume();
 	}

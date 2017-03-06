@@ -54,27 +54,34 @@ public class DocumentBuilder {
 			return;
 		}
 
-		if (StringUtils.isBlank(message.getContent())) {
-			String sources = "";
-			if (StringUtils.isNotBlank(message.getTempFilePath())) {
-				try {
-					sources = FileUtils.readFileToString(new File(message.getTempFilePath()), "utf-8");
-					message.setContent(sources);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		if (StringUtils.isBlank(message.getContent())) {
-			buildSource(message);
-			return ;
-		}
-
 		String indexSaveUrl = "";
 		String indexSaveResult ="";
 		String dbSaveResult = "";
-		if (StringUtils.isNotBlank(message.getContent()) && message.getBuildDocType() != null) {
+		if ( message.getBuildDocType() != null) {
+			
+			switch (message.getBuildDocType()) {
+			case newsDoc:
+			case topicDoc:
+			case weixinGzhDoc:
+				if (StringUtils.isBlank(message.getContent())) {
+					String sources = "";
+					if (StringUtils.isNotBlank(message.getTempFilePath())) {
+						try {
+							sources = FileUtils.readFileToString(new File(message.getTempFilePath()), "utf-8");
+							message.setContent(sources);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				if (StringUtils.isBlank(message.getContent())) {
+					buildSource(message);
+				}
+				break;
+			default:
+				break;
+			}
 		
 			switch (message.getBuildDocType()) {
 			case newsDoc:
@@ -108,8 +115,8 @@ public class DocumentBuilder {
 					break;
 				}
 				indexSaveResult = HttpRequestUtil.postJSON(weixinSaveIndex, JSONObject.toJSONString(weixinGzhDoc));
-				dbSaveResult = HttpRequestUtil.postJSON(weixinSaveDB, JSONObject.toJSONString(weixinGzhDoc));
-				dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
+				//dbSaveResult = HttpRequestUtil.postJSON(weixinSaveDB, JSONObject.toJSONString(weixinGzhDoc));
+				//dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
 				log.info("======================>>>weixinGzhDoc saved {}  sources =>>{}", dbSaveResult, indexSaveResult);
 				break;
 			default:
