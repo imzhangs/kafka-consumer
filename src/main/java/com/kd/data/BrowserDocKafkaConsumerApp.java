@@ -31,6 +31,7 @@ public class BrowserDocKafkaConsumerApp {
 		final ApplicationContext applicationContext = SpringApplication.run(BrowserDocKafkaConsumerApp.class, args);
 		NativeConsumer consumer=applicationContext.getBean(NativeConsumer.class);
 		consumer.init();
+		consumer.topic="xiguaji-topic";
 		Thread.sleep(3000);
 		consumer.consume();
 	}

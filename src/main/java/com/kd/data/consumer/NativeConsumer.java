@@ -55,6 +55,9 @@ public class NativeConsumer {
 	
 	@Value("${consume.thread.count}")
 	int consumeAnalyseThreads;
+	
+	@Value("${remotedict.split.url}")
+	String  remoteDicSplitUrl;
 
 	@Autowired
 	ExecutorService executor;
@@ -100,6 +103,7 @@ public class NativeConsumer {
 			consumer.setDbSaveUrl(wxGzhSaveDBUrl);
 			consumer.setPhantomJSPath(phantomJSPath);
 			consumer.setWindowsPhantomJSPath(windowsPhantomJSPath);
+			consumer.setRemoteDicSplitUrl(remoteDicSplitUrl);
 			executor.submit(consumer);
 		}
 	}

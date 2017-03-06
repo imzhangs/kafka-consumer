@@ -34,6 +34,7 @@ public class DocumentBuilder {
 	
 	public static String phantomJSPath;
 	public static String windowsPhantomJSPath;
+	public static String remoteDicSplitUrl;
 	
 	public static WebDriver getWebDriver(){
 		if(System.getProperty("os.name").toLowerCase().contains("windows")){
@@ -126,27 +127,6 @@ public class DocumentBuilder {
 		} else {
 			log.error("message content or buildDocType is null ....");
 		}
-
-		// String tempFilePath = "/home/data/weixingzhDoc/" +
-		// DateFormatUtils.format(new Date(),
-		// StringFormatConsts.DATE_NUMBER_FORMAT)+"/";
-		// tempFilePath = tempFilePath + MD5Util.MD5(message.getUrl());
-		// try {
-		// FileUtils.writeStringToFile(new File(tempFilePath),
-		// JSONObject.toJSONString(doc), "utf-8", false);
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }finally{
-		// //分词切割
-		//// List<Word> wordList = new ArrayList<Word>();
-		//// if (jedis != null) {
-		//// wordList = WordSegmenter.seg(value.htmlContent,
-		// SegmentationAlgorithm.BidirectionalMaximumMatching);
-		//// for (Word w : wordList) {
-		//// jedis.sadd("redis-words", w.getText());
-		//// }
-		//// }
-		// }
 
 	}
 

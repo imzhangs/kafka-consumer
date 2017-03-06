@@ -60,7 +60,6 @@ public class ConsumerRunable<K, V> implements Runnable {
 
 	public void setWeixinGzhIndexSaveUrl(String weixinGzhIndexSaveUrl) {
 		DocumentBuilder.weixinSaveIndex=weixinGzhIndexSaveUrl;
-		
 	}
 
 	public String getWeiboIndexSaveUrl() {
@@ -77,6 +76,14 @@ public class ConsumerRunable<K, V> implements Runnable {
 
 	public void setDbSaveUrl(String dbSaveUrl) {
 		DocumentBuilder.weixinSaveDB=dbSaveUrl;
+	}
+	
+	public String getRemoteDicSplitUrl(){
+		return DocumentBuilder.remoteDicSplitUrl;
+	}
+	
+	public void setRemoteDicSplitUrl(String remoteDicSplitUrl){
+		DocumentBuilder.remoteDicSplitUrl=remoteDicSplitUrl;
 	}
 
 	public SendMQBuilder getSendMQBuilder() {
@@ -186,10 +193,11 @@ public class ConsumerRunable<K, V> implements Runnable {
 					return ;
 				}
 				String content = FileUtils.readFileToString(new File(filepath), "utf-8");
+				message.setContent(content);
 				if(StringUtils.isBlank(content)){
 					log.warn("tempFile conetnt is empty ... with path={}",filepath);
 				}else{
-					sendMQBuilder.urlExplainAndSend(content,message.getBuildDocType());
+					sendMQBuilder.urlExplainAndSend(message);
 				}
 				break;
 			case _customer:

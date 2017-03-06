@@ -28,19 +28,21 @@ public class SendMQBuilder {
 	 * 从html 文档中 抓出所有的 链接 并发到 消息队列
 	 * @param htmlSources html document
 	 */
-	public  void urlExplainAndSend(String htmlSources,BuildDocTypeEnum buildDocType){
-		Document doc = Jsoup.parse(htmlSources);
+	public  void urlExplainAndSend(KafkaMessage message){
+		Document doc = Jsoup.parse(message.getContent());
 		Elements elements=doc.select("a");
+		String getTopic=message.getTopic();
+		BuildDocTypeEnum buildDocType=message.getBuildDocType();
 		for(Element it:elements){
 			String url=it.attr("href");
 			if(StringUtils.isBlank(url) || !url.matches(HtmlRegexConsts.DOMAIN)){
 				continue;
 			}
-			KafkaMessage message=new KafkaMessage();
+			message=new KafkaMessage();
 			message.setUrl(url);
 			message.setType(ExplainTypeEnum._requestURL);
-			message.setTopic(topic);
 			message.setBuildDocType(buildDocType);
+			message.setTopic(StringUtils.isBlank(getTopic)?this.topic:getTopic);
 			sendMessgae( message);
 		}
 	}
