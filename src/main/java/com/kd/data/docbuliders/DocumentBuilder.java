@@ -34,7 +34,9 @@ public class DocumentBuilder {
 	
 	public static String phantomJSPath;
 	public static String windowsPhantomJSPath;
+	
 	public static String remoteDicSplitUrl;
+	public static String remoteDicTopic;
 	
 	public static WebDriver getWebDriver(){
 		if(System.getProperty("os.name").toLowerCase().contains("windows")){
@@ -84,17 +86,19 @@ public class DocumentBuilder {
 				break;
 			}
 		
+			String content="";
 			switch (message.getBuildDocType()) {
 			case newsDoc:
 				NewsDoc newsDoc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
-				
+				content=newsDoc.getContent();
 				//indexURL ??
 				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(newsDoc));
 				break;
 			case topicDoc:
 				BrowserSearchDoc browserSearchDoc = BrowserDocumentBuilder.browserSearchDocBuild(message.getUrl(),
 						message.getContent(), true);
-				
+
+				content=browserSearchDoc.getContent();
 				//indexURL ??
 				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(browserSearchDoc));
 				break;
@@ -115,6 +119,8 @@ public class DocumentBuilder {
 				if(weixinGzhDoc==null){
 					break;
 				}
+
+				content=weixinGzhDoc.getContent();
 				indexSaveResult = HttpRequestUtil.postJSON(weixinSaveIndex, JSONObject.toJSONString(weixinGzhDoc));
 				//dbSaveResult = HttpRequestUtil.postJSON(weixinSaveDB, JSONObject.toJSONString(weixinGzhDoc));
 				//dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
@@ -123,7 +129,11 @@ public class DocumentBuilder {
 			default:
 				break;
 			}
+			KafkaMessage dictMessage=new KafkaMessage();
+			dictMessage.setTopic(remoteDicTopic);
+			dictMessage.setContent(content);
 			
+			HttpRequestUtil.postJSON(remoteDicSplitUrl,JSONObject.toJSONString(dictMessage) );
 		} else {
 			log.error("message content or buildDocType is null ....");
 		}

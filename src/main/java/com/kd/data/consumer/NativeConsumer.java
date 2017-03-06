@@ -94,7 +94,7 @@ public class NativeConsumer {
 		
 		// now create an object to consume the messages
 		for (final KafkaStream<byte[], byte[]> stream : streams) {
-			ConsumerRunable<byte[], byte[]> consumer=	new ConsumerRunable<>(stream);
+			ConsumerRunable<byte[], byte[]> consumer =	new ConsumerRunable<>(stream);
 			consumer.setContentKeyRegexs(contentKeyRegexs);
 			consumer.setWeixinGzhIndexSaveUrl(weixinIndexSaveUrl);
 			consumer.setWeiboIndexSaveUrl(weiboIndexSaveUrl);
