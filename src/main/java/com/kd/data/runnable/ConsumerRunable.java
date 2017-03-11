@@ -21,20 +21,18 @@ import kafka.consumer.KafkaStream;
 
 public class ConsumerRunable<K, V> implements Runnable {
 
-
 	static Logger log = LoggerFactory.getLogger(ConsumerRunable.class);
 
 	String contentKeyRegexs;
 
 	SendMQBuilder sendMQBuilder;
-	
 
 	public String getPhantomJSPath() {
 		return DocumentBuilder.phantomJSPath;
 	}
 
 	public void setPhantomJSPath(String phantomJSPath) {
-		DocumentBuilder.phantomJSPath=phantomJSPath;
+		DocumentBuilder.phantomJSPath = phantomJSPath;
 	}
 
 	public String getWindowsPhantomJSPath() {
@@ -42,16 +40,15 @@ public class ConsumerRunable<K, V> implements Runnable {
 	}
 
 	public void setWindowsPhantomJSPath(String windowsPhantomJSPath) {
-		DocumentBuilder.windowsPhantomJSPath=windowsPhantomJSPath;
+		DocumentBuilder.windowsPhantomJSPath = windowsPhantomJSPath;
 	}
 
-	
 	public String getWeiboSaveDBUrl() {
 		return DocumentBuilder.weiboSaveDB;
 	}
 
 	public void setWeiboSaveDBUrl(String weiboSaveDBUrl) {
-		DocumentBuilder.weiboSaveDB=weiboSaveDBUrl;
+		DocumentBuilder.weiboSaveDB = weiboSaveDBUrl;
 	}
 
 	public String getWeixinGzhIndexSaveUrl() {
@@ -59,7 +56,7 @@ public class ConsumerRunable<K, V> implements Runnable {
 	}
 
 	public void setWeixinGzhIndexSaveUrl(String weixinGzhIndexSaveUrl) {
-		DocumentBuilder.weixinSaveIndex=weixinGzhIndexSaveUrl;
+		DocumentBuilder.weixinSaveIndex = weixinGzhIndexSaveUrl;
 	}
 
 	public String getWeiboIndexSaveUrl() {
@@ -67,7 +64,7 @@ public class ConsumerRunable<K, V> implements Runnable {
 	}
 
 	public void setWeiboIndexSaveUrl(String weiboIndexSaveUrl) {
-		DocumentBuilder.weiboSaveIndex=weiboIndexSaveUrl;
+		DocumentBuilder.weiboSaveIndex = weiboIndexSaveUrl;
 	}
 
 	public String getDbSaveUrl() {
@@ -75,15 +72,23 @@ public class ConsumerRunable<K, V> implements Runnable {
 	}
 
 	public void setDbSaveUrl(String dbSaveUrl) {
-		DocumentBuilder.weixinSaveDB=dbSaveUrl;
+		DocumentBuilder.weixinSaveDB = dbSaveUrl;
 	}
-	
-	public String getRemoteDicSplitUrl(){
+
+	public String getRemoteDicSplitUrl() {
 		return DocumentBuilder.remoteDicSplitUrl;
 	}
-	
-	public void setRemoteDicSplitUrl(String remoteDicSplitUrl){
-		DocumentBuilder.remoteDicSplitUrl=remoteDicSplitUrl;
+
+	public void setRemoteDicSplitUrl(String remoteDicSplitUrl) {
+		DocumentBuilder.remoteDicSplitUrl = remoteDicSplitUrl;
+	}
+
+	public void setRemoteDicTopic(String topic) {
+		DocumentBuilder.remoteDicTopic = topic;
+	}
+
+	public String getRemoteDicTopic() {
+		return DocumentBuilder.remoteDicTopic;
 	}
 
 	public SendMQBuilder getSendMQBuilder() {
@@ -128,13 +133,13 @@ public class ConsumerRunable<K, V> implements Runnable {
 					: jsonStr);
 			KafkaMessage message = JSONObject.parseObject(jsonStr, KafkaMessage.class);
 			try {
-				if (message == null  ) {
+				if (message == null) {
 					log.error("explain failed, message url error !!!!");
 					continue;
 				}
-				
+
 				explain(message);
-				
+
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
@@ -152,7 +157,7 @@ public class ConsumerRunable<K, V> implements Runnable {
 		if (null == message || StringUtils.isBlank(message.getContent())) {
 			return null;
 		}
-		
+
 		NewsDoc newsDoc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
 		if (message.isSaveToIndex()) {
 			HttpRequestUtil.postJSON(getWeixinGzhIndexSaveUrl(), JSONObject.toJSONString(newsDoc));
@@ -167,36 +172,37 @@ public class ConsumerRunable<K, V> implements Runnable {
 	 */
 
 	public void explain(KafkaMessage message) {
-		
+
 		try {
-			switch(message.getType()){
+			switch (message.getType()) {
 			case _default:
 			case _buildDocument:
-				////文档解析	
-				if(null==message.getBuildDocType()){
+				//// 文档解析
+				if (null == message.getBuildDocType()) {
 					log.error(" message.getBuildDocType() is null !!!");
 					break;
 				}
 				DocumentBuilder.docBuilderAndSave(message);
 				break;
 			case _requestURL:
-				message.setUrl(message.getUrl().startsWith("http://")?message.getUrl():"http://"+message.getUrl());
-				message=DocumentBuilder.buildSource(message);
+				message.setUrl(
+						message.getUrl().startsWith("http://") ? message.getUrl() : "http://" + message.getUrl());
+				message = DocumentBuilder.buildSource(message);
 				sendMQBuilder.sendMessgae(message);
 				break;
 			case _tempSegements:
-				//TODO 	// 后期考虑 DFS
-				String filepath=message.getTempFilePath();
+				// TODO // 后期考虑 DFS
+				String filepath = message.getTempFilePath();
 				File tempFile = new File(filepath);
 				if (!tempFile.exists()) {
-					log.error("tempFile does not exists !!! path ={}",filepath);
-					return ;
+					log.error("tempFile does not exists !!! path ={}", filepath);
+					return;
 				}
 				String content = FileUtils.readFileToString(new File(filepath), "utf-8");
 				message.setContent(content);
-				if(StringUtils.isBlank(content)){
-					log.warn("tempFile conetnt is empty ... with path={}",filepath);
-				}else{
+				if (StringUtils.isBlank(content)) {
+					log.warn("tempFile conetnt is empty ... with path={}", filepath);
+				} else {
 					sendMQBuilder.urlExplainAndSend(message);
 				}
 				break;
@@ -204,17 +210,15 @@ public class ConsumerRunable<K, V> implements Runnable {
 				break;
 			default:
 				break;
-			
+
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}finally{
-			
+		} finally {
+
 		}
 
 	}
-	
-	
-	
+
 }

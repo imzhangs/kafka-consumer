@@ -29,6 +29,9 @@ public class NativeConsumer {
 	@Value("${kafka.topic}")
 	public String topic;
 	
+	@Value("${dict.topic}")
+	public String dictTopic;
+	
 	@Value("${serializer.encoding}")
 	String encoding;
 	
@@ -104,6 +107,7 @@ public class NativeConsumer {
 			consumer.setPhantomJSPath(phantomJSPath);
 			consumer.setWindowsPhantomJSPath(windowsPhantomJSPath);
 			consumer.setRemoteDicSplitUrl(remoteDicSplitUrl);
+			consumer.setRemoteDicTopic(dictTopic);
 			executor.submit(consumer);
 		}
 	}

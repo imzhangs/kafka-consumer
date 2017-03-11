@@ -31,6 +31,7 @@ public class WeChatGzhConsumerApp {
 		final ApplicationContext applicationContext = SpringApplication.run(WeChatGzhConsumerApp.class, args);
 		NativeConsumer consumer=applicationContext.getBean(NativeConsumer.class);
 		consumer.init();
+		consumer.topic="xiguaji-main-1";
 		Thread.sleep(3000);
 		consumer.consume();
 	}
