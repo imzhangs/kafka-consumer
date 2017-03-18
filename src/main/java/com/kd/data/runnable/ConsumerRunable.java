@@ -210,7 +210,6 @@ public class ConsumerRunable<K, V> implements Runnable {
 				break;
 			default:
 				break;
-
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

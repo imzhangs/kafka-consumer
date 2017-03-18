@@ -86,6 +86,9 @@ public class DocumentBuilder {
 				break;
 			}
 		
+			
+			
+			////
 			String content="";
 			switch (message.getBuildDocType()) {
 			case newsDoc:
@@ -103,8 +106,8 @@ public class DocumentBuilder {
 				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(browserSearchDoc));
 				break;
 			case weiboDoc:
-				List<WeiboDoc> weibodocList = WeiboDocumentBuilder.weiboDocBuild(message, true);
 				
+				List<WeiboDoc> weibodocList = WeiboDocumentBuilder.tempWeiboDocBuild(message, true);
 				
 				for(WeiboDoc weiboDoc:weibodocList){
 					
