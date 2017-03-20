@@ -88,7 +88,7 @@ public class DocumentBuilder {
 		
 			
 			
-			////
+			//// 存档
 			String content="";
 			switch (message.getBuildDocType()) {
 			case newsDoc:
@@ -114,7 +114,7 @@ public class DocumentBuilder {
 					indexSaveResult = HttpRequestUtil.postJSON(weiboSaveIndex, JSONObject.toJSONString(weiboDoc));
 					dbSaveResult =HttpRequestUtil.postJSON(weiboSaveDB, JSONObject.toJSONString(weiboDoc));
 					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
-					log.info("======================>>>weiboDoc saved {}  sources =>>{}", dbSaveResult, indexSaveResult);
+					log.info("======================>>> weiboSaveIndex and weiboSaveDB {}  sources =>>{}", dbSaveResult, indexSaveResult);
 				}
 				break;
 			case weixinGzhDoc:
@@ -125,9 +125,9 @@ public class DocumentBuilder {
 
 				content=weixinGzhDoc.getContent();
 				indexSaveResult = HttpRequestUtil.postJSON(weixinSaveIndex, JSONObject.toJSONString(weixinGzhDoc));
-				//dbSaveResult = HttpRequestUtil.postJSON(weixinSaveDB, JSONObject.toJSONString(weixinGzhDoc));
-				//dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
-				log.info("======================>>>weixinGzhDoc saved {}  sources =>>{}", dbSaveResult, indexSaveResult);
+				dbSaveResult = HttpRequestUtil.postJSON(DocumentBuilder.weixinSaveDB, JSONObject.toJSONString(weixinGzhDoc));
+				dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
+				log.info("======================>>>weixinSaveIndex and weixinSaveDB {}  sources =>>{}", dbSaveResult, indexSaveResult);
 				break;
 			default:
 				break;
