@@ -469,7 +469,7 @@ public class WeiboDocumentBuilder {
 				weiboDoc.setUrl(subUrl);
 				weiboDoc.setJobId(30552);
 				weiboDoc.setDate(Long.valueOf(DateFormatUtils.format(new Date(), StringFormatConsts.DATE_HOUR_NUMBER_FORMAT)));
-				weiboDoc.setJobId(message.getSourceId());
+				weiboDoc.setSource(message.getSourceId());
 				weiboDoc.setLevel(message.getLevel());
 				weiboDoc.setType(message.getTypeId());
 				

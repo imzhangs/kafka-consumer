@@ -140,7 +140,7 @@ public class WeixinGzhDocumentBuilder {
 		browserSearchDoc.setId(urlMD5);
 		browserSearchDoc.setTitle(title);
 		browserSearchDoc.setUrl(url);
-		browserSearchDoc.setJobId(message.getSourceId());
+		browserSearchDoc.setSource(message.getSourceId());
 		browserSearchDoc.setAuthorAccount(message.getAuthor());
 		browserSearchDoc.setType(message.getTypeId());
 		

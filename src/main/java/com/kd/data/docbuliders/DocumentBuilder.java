@@ -62,6 +62,7 @@ public class DocumentBuilder {
 		String dbSaveResult = "";
 		if ( message.getBuildDocType() != null) {
 			
+			//// source 获取
 			switch (message.getBuildDocType()) {
 			case newsDoc:
 			case topicDoc:
