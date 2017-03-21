@@ -23,7 +23,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.fastjson.JSONObject;
 import com.kd.browersearch.domain.WeiboDoc;
 import com.kd.commons.consts.StringFormatConsts;
 import com.kd.commons.domain.KafkaMessage;
@@ -31,6 +30,7 @@ import com.kd.commons.enums.BuildDocTypeEnum;
 import com.kd.commons.utils.MD5Util;
 
 public class WeiboDocumentBuilder {
+	
 	static Logger logger = LoggerFactory.getLogger(WeiboDocumentBuilder.class);
 
 	/**
@@ -193,6 +193,7 @@ public class WeiboDocumentBuilder {
 		}
 		
 	}
+	
 	/**
 	 * 对  http://weibo.com/u/xxxx 解析有效
 	 * 
@@ -507,13 +508,21 @@ public class WeiboDocumentBuilder {
 			return time;
 		}
 
-		String regexMin = "^([\\d]+).*";
+		String regexMin = "^([\\d]+)月([\\d]+)日[\\s]+([\\d]{2}:[\\d]{2}[\\s]*).*";
+		if (time.matches(regexMin)) {
+			String year = DateFormatUtils.format(new Date(), "yyyy");
+			String todayYMD =time.replaceAll(regexMin, year+"-$1-$2 $3");
+			return todayYMD;
+		}
+
+		regexMin = "^([\\d]+).*";
 		if (time.matches(regexMin)) {
 			int beforeMin = Integer.valueOf(time.replaceFirst(regexMin, "$1"));
 			Date date = DateUtils.addMinutes(new Date(), -beforeMin);
 			String todayYMD = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
 			return todayYMD;
 		}
+		
 
 		return time;
 	}
@@ -526,14 +535,16 @@ public class WeiboDocumentBuilder {
 	}
 
 	public static void main(String[] args) throws Throwable {
-		String url = "http://weibo.com/u/2775583835";
-		KafkaMessage message=new KafkaMessage();
-		message.setContent(FileUtils.readFileToString(new File("F:/data/htmltemp/123"), "utf-8"));
-		message.setUrl(url);
-		List<WeiboDoc> list=tempWeiboDocBuild(message, true);
-		for(WeiboDoc doc:list){
-			System.out.println(JSONObject.toJSONString(doc));
-		}
+//		String url = "http://weibo.com/u/2775583835";
+//		KafkaMessage message=new KafkaMessage();
+//		message.setContent(FileUtils.readFileToString(new File("F:/data/htmltemp/123"), "utf-8"));
+//		message.setUrl(url);
+//		List<WeiboDoc> list=tempWeiboDocBuild(message, true);
+//		for(WeiboDoc doc:list){
+//			System.out.println(JSONObject.toJSONString(doc));
+//		}
+		
+		System.out.println(getWeiboFullPublishTime("3月19日 21:51"));
 	}
 
 }
