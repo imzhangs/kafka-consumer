@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.kd.xigua</groupId>
 	<artifactId>xigua-consumer</artifactId>
-	<version>1.0.0.</version>
+	<version>1.0.0</version>
 
 
 	<properties>
@@ -138,7 +138,7 @@
 		<dependency>
 			<groupId>com.kd.commons</groupId>
 			<artifactId>commons-api</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.4</version>
 		</dependency>
 
 		<dependency>
