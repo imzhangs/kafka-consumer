@@ -138,7 +138,7 @@
 		<dependency>
 			<groupId>com.kd.commons</groupId>
 			<artifactId>commons-api</artifactId>
-			<version>1.2.4</version>
+			<version>1.2.5</version>
 		</dependency>
 
 		<dependency>

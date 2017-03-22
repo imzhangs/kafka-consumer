@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kd.commons.domain.KafkaMessage;
-import com.kd.commons.http.HttpRequestUtil;
 import com.kd.data.docbuliders.DocumentBuilder;
 import com.kd.data.docbuliders.NewsDocumentBuilder;
 import com.kd.data.docbuliders.SendMQBuilder;

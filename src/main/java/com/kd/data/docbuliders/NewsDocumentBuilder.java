@@ -215,13 +215,14 @@ public class NewsDocumentBuilder {
 		// 装箱
 		newsDoc.setAuthor(author);
 		newsDoc.setContent(StringUtils.isBlank(content) ? title : content);
+		Long publishDatestamp=System.currentTimeMillis();
 		try {
 			Date publishDate = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(publishTime);
-			publishTime = DateFormatUtils.format(publishDate, "yyyyMMddHH");
+			publishDatestamp=publishDate.getTime();
 		} catch (ParseException e) {
-			publishTime = DateFormatUtils.format(new Date(), "yyyyMMddHH");
 		}
-		newsDoc.setDate(publishTime);
+		newsDoc.setDate(publishDatestamp);
+		newsDoc.setPublishDate(publishTime);
 		newsDoc.setUpdateTime(updateTime);
 		newsDoc.setGroupId(groupId);
 		newsDoc.setId(groupId + urlMD5);
