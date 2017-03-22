@@ -27,69 +27,6 @@ public class ConsumerRunable<K, V> implements Runnable {
 
 	SendMQBuilder sendMQBuilder;
 
-	public String getPhantomJSPath() {
-		return DocumentBuilder.phantomJSPath;
-	}
-
-	public void setPhantomJSPath(String phantomJSPath) {
-		DocumentBuilder.phantomJSPath = phantomJSPath;
-	}
-
-	public String getWindowsPhantomJSPath() {
-		return DocumentBuilder.windowsPhantomJSPath;
-	}
-
-	public void setWindowsPhantomJSPath(String windowsPhantomJSPath) {
-		DocumentBuilder.windowsPhantomJSPath = windowsPhantomJSPath;
-	}
-
-	public String getWeiboSaveDBUrl() {
-		return DocumentBuilder.weiboSaveDB;
-	}
-
-	public void setWeiboSaveDBUrl(String weiboSaveDBUrl) {
-		DocumentBuilder.weiboSaveDB = weiboSaveDBUrl;
-	}
-
-	public String getWeixinGzhIndexSaveUrl() {
-		return DocumentBuilder.weixinSaveIndex;
-	}
-
-	public void setWeixinGzhIndexSaveUrl(String weixinGzhIndexSaveUrl) {
-		DocumentBuilder.weixinSaveIndex = weixinGzhIndexSaveUrl;
-	}
-
-	public String getWeiboIndexSaveUrl() {
-		return DocumentBuilder.weiboSaveIndex;
-	}
-
-	public void setWeiboIndexSaveUrl(String weiboIndexSaveUrl) {
-		DocumentBuilder.weiboSaveIndex = weiboIndexSaveUrl;
-	}
-
-	public String getDbSaveUrl() {
-		return DocumentBuilder.weixinSaveDB;
-	}
-
-	public void setDbSaveUrl(String dbSaveUrl) {
-		DocumentBuilder.weixinSaveDB = dbSaveUrl;
-	}
-
-	public String getRemoteDicSplitUrl() {
-		return DocumentBuilder.remoteDicSplitUrl;
-	}
-
-	public void setRemoteDicSplitUrl(String remoteDicSplitUrl) {
-		DocumentBuilder.remoteDicSplitUrl = remoteDicSplitUrl;
-	}
-
-	public void setRemoteDicTopic(String topic) {
-		DocumentBuilder.remoteDicTopic = topic;
-	}
-
-	public String getRemoteDicTopic() {
-		return DocumentBuilder.remoteDicTopic;
-	}
 
 	public SendMQBuilder getSendMQBuilder() {
 		return sendMQBuilder;
@@ -158,11 +95,7 @@ public class ConsumerRunable<K, V> implements Runnable {
 			return null;
 		}
 
-		NewsDoc newsDoc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
-		if (message.isSaveToIndex()) {
-			HttpRequestUtil.postJSON(getWeixinGzhIndexSaveUrl(), JSONObject.toJSONString(newsDoc));
-		}
-		return newsDoc;
+		return NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
 	}
 
 	/**

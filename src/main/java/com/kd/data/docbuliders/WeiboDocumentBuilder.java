@@ -53,7 +53,6 @@ public class WeiboDocumentBuilder {
 			WebDriverWait wait = new WebDriverWait(driver, 30);
 			wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
 			Thread.sleep(10000);
-			FileUtils.writeStringToFile(new File("/data/htmltemp/123"),driver.getPageSource()+"\n","utf-8",false);
 			WebElement appCardEle =null;
 			
 			appCardEle = driver.findElement(By.xpath("//html//body//div[@id='app']"));
@@ -363,7 +362,6 @@ public class WeiboDocumentBuilder {
 		String url=message.getUrl();
 		try {
 			Document htmlDoc=Jsoup.parse(message.getContent());
-			FileUtils.writeStringToFile(new File("/data/temp/"+MD5Util.MD5(htmlDoc.html())), htmlDoc.html(), false);
 			String author = "";
 			String weiboDocId = "";
 			String publishDate = "";
@@ -401,7 +399,7 @@ public class WeiboDocumentBuilder {
 				author = node.select("div[class=WB_info]").text();
 				Elements publishEle=node.select("div[class=WB_detail]>div[class=WB_from S_txt2]>a:eq(0)");
 				
-				publishDate = publishEle.text();
+				publishDate = publishEle.attr("title").trim();
 				publishDate = getWeiboFullPublishTime(publishDate);
 				
 				subUrl="http://weibo.com"+publishEle.attr("href");

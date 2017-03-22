@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kd.browersearch.domain.BrowserSearchDoc;
+import com.kd.browersearch.domain.FacebookDoc;
 import com.kd.browersearch.domain.WeiboDoc;
 import com.kd.commons.consts.HtmlRegexConsts;
 import com.kd.commons.domain.KafkaMessage;
@@ -29,8 +30,10 @@ public class DocumentBuilder {
 
 	public static String weiboSaveIndex;
 	public static String weixinSaveIndex;
-	public static String weixinSaveDB;
 	public static String weiboSaveDB;
+	public static String weixinSaveDB;
+	public static String facebookSaveIndex;
+	public static String facebookSaveDB;
 	
 	public static String phantomJSPath;
 	public static String windowsPhantomJSPath;
@@ -129,6 +132,15 @@ public class DocumentBuilder {
 				dbSaveResult = HttpRequestUtil.postJSON(DocumentBuilder.weixinSaveDB, JSONObject.toJSONString(weixinGzhDoc));
 				dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
 				log.info("======================>>>weixinSaveIndex and weixinSaveDB {}  sources =>>{}", dbSaveResult, indexSaveResult);
+				break;
+			case facebookDoc:
+				List<FacebookDoc> listFb=FacebookDocBuilder.tempFacebookTopicBuild(message, true);
+				for(FacebookDoc fb:listFb){
+					indexSaveResult = HttpRequestUtil.postJSON(facebookSaveIndex, JSONObject.toJSONString(fb));
+					dbSaveResult = HttpRequestUtil.postJSON(DocumentBuilder.facebookSaveDB, JSONObject.toJSONString(fb));
+					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
+					log.info("======================>>>facebookSaveIndex and facebookSaveDB {}  sources =>>{}", dbSaveResult, indexSaveResult);
+				}
 				break;
 			default:
 				break;

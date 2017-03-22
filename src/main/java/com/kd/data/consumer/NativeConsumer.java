@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.kd.data.docbuliders.DocumentBuilder;
 import com.kd.data.docbuliders.SendMQBuilder;
 import com.kd.data.runnable.ConsumerRunable;
 
@@ -41,14 +42,20 @@ public class NativeConsumer {
 	@Value("${weixin.index.save.url}")
 	String weixinIndexSaveUrl;
 	
+	@Value("${weixinGzh.db.save.url}")
+	String wxGzhSaveDBUrl;
+	
 	@Value("${weibo.index.save.url}")
 	String weiboIndexSaveUrl;
 	
 	@Value("${weibo.db.save.url}")
 	String weiboSaveDBUrl;
 	
-	@Value("${weixinGzh.db.save.url}")
-	String wxGzhSaveDBUrl;
+	@Value("${facebook.index.save.url}")
+	String facebookIndexSaveUrl;
+	
+	@Value("${facebook.db.save.url}")
+	String facebookSaveDBUrl;
 	
 	@Value("${phantomJS.path}")
 	String phantomJSPath;
@@ -99,15 +106,19 @@ public class NativeConsumer {
 		for (final KafkaStream<byte[], byte[]> stream : streams) {
 			ConsumerRunable<byte[], byte[]> consumer =	new ConsumerRunable<>(stream);
 			consumer.setContentKeyRegexs(contentKeyRegexs);
-			consumer.setWeixinGzhIndexSaveUrl(weixinIndexSaveUrl);
-			consumer.setWeiboIndexSaveUrl(weiboIndexSaveUrl);
-			consumer.setWeiboSaveDBUrl(weiboSaveDBUrl);
 			consumer.setSendMQBuilder(sendMQBuilder);
-			consumer.setDbSaveUrl(wxGzhSaveDBUrl);
-			consumer.setPhantomJSPath(phantomJSPath);
-			consumer.setWindowsPhantomJSPath(windowsPhantomJSPath);
-			consumer.setRemoteDicSplitUrl(remoteDicSplitUrl);
-			consumer.setRemoteDicTopic(dictTopic);
+			
+			DocumentBuilder.weixinSaveIndex=(weixinIndexSaveUrl);
+			DocumentBuilder.weixinSaveDB=(wxGzhSaveDBUrl);
+			DocumentBuilder.weiboSaveIndex=(weiboIndexSaveUrl);
+			DocumentBuilder.weiboSaveDB=(weiboSaveDBUrl);
+			DocumentBuilder.facebookSaveIndex=facebookIndexSaveUrl;
+			DocumentBuilder.facebookSaveDB=facebookSaveDBUrl;
+			
+			DocumentBuilder.phantomJSPath=(phantomJSPath);
+			DocumentBuilder.windowsPhantomJSPath=(windowsPhantomJSPath);
+			DocumentBuilder.remoteDicSplitUrl=(remoteDicSplitUrl);
+			DocumentBuilder.remoteDicTopic=(dictTopic);
 			executor.submit(consumer);
 		}
 	}
