@@ -34,6 +34,9 @@ public class DocumentBuilder {
 	public static String weixinSaveDB;
 	public static String facebookSaveIndex;
 	public static String facebookSaveDB;
+
+	public static String newsIndexSaveUrl;
+	public static String newsSaveDB;
 	
 	public static String phantomJSPath;
 	public static String windowsPhantomJSPath;
@@ -60,7 +63,6 @@ public class DocumentBuilder {
 			return;
 		}
 
-		String indexSaveUrl = "";
 		String indexSaveResult ="";
 		String dbSaveResult = "";
 		if ( message.getBuildDocType() != null) {
@@ -99,7 +101,10 @@ public class DocumentBuilder {
 				NewsDoc newsDoc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
 				content=newsDoc.getContent();
 				//indexURL ??
-				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(newsDoc));
+				indexSaveResult = HttpRequestUtil.postJSON(newsIndexSaveUrl, JSONObject.toJSONString(newsDoc));
+				dbSaveResult =HttpRequestUtil.postJSON(newsSaveDB, JSONObject.toJSONString(newsDoc));
+				dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
+				log.info("======================>>> weiboSaveIndex and weiboSaveDB {}  sources =>>{}", dbSaveResult, indexSaveResult);
 				break;
 			case topicDoc:
 				BrowserSearchDoc browserSearchDoc = BrowserDocumentBuilder.browserSearchDocBuild(message.getUrl(),
@@ -107,10 +112,9 @@ public class DocumentBuilder {
 
 				content=browserSearchDoc.getContent();
 				//indexURL ??
-				indexSaveResult = HttpRequestUtil.postJSON(indexSaveUrl, JSONObject.toJSONString(browserSearchDoc));
+				indexSaveResult = HttpRequestUtil.postJSON(newsIndexSaveUrl, JSONObject.toJSONString(browserSearchDoc));
 				break;
 			case weiboDoc:
-				
 				List<WeiboDoc> weibodocList = WeiboDocumentBuilder.tempWeiboDocBuild(message, true);
 				
 				for(WeiboDoc weiboDoc:weibodocList){

@@ -50,12 +50,18 @@ public class NativeConsumer {
 	
 	@Value("${weibo.db.save.url}")
 	String weiboSaveDBUrl;
-	
+
 	@Value("${facebook.index.save.url}")
 	String facebookIndexSaveUrl;
 	
 	@Value("${facebook.db.save.url}")
 	String facebookSaveDBUrl;
+	
+	@Value("${news.index.save.url}")
+	String newsIndexSaveUrl;
+	
+	@Value("${news.db.save.url}")
+	String newsSaveDB;
 	
 	@Value("${phantomJS.path}")
 	String phantomJSPath;
