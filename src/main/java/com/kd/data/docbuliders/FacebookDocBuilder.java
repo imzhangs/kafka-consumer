@@ -51,26 +51,33 @@ public class FacebookDocBuilder {
 			
 			Elements cardList = htmlDoc.select("div[class=_427x]");
 			for (Element node : cardList) {
-				author = node.select("a[class=profileLink]").text();
-				Elements publishEle=node.select("span[class=timestampContent]");
+				author = node.select("span[class=fwb fcg]").text();
 				
-				publishDate = publishEle.text();
+				publishDate = node.select("abbr[class=_5ptz]").attr("title");
 				publishDate = getFaceBookFullPublishTime(publishDate);
 				
-				subUrl= node.select("a[class=profileLink").attr("href");
-				fbId = MD5Util.MD5(subUrl);
+				subUrl= node.select("span[class=fsm fwn fcg]>a[class=_5pcq").attr("href");
+				subUrl=subUrl.startsWith("http")?subUrl:"http://www.facebook.com"+subUrl;
+				fbId = MD5Util.MD5(subUrl+publishDate);
 						
-				contentText = node.select("div[class=_5pbx userContent]>div>p").text();
-				String commentText =node.select("span[class=UFICommentContent]").text();
+				contentText = node.select("div[class=_5pbx userContent]").text();
+				Elements commentList=node.select("div[class=UFICommentContentBlock]");
+				StringBuilder commentTextBuilder=new StringBuilder();
+				for(Element commentEl:commentList){
+					String commentAuthor=commentEl.select("span[class= UFICommentActorName]").text();
+					String commentBody=commentEl.select("span[class= UFICommentBody]").text();
+					commentTextBuilder.append(commentAuthor+":\""+commentBody+"\";;;");
+				}
+				String commentText =commentTextBuilder.toString();
 				
-				String likeText = node.select("span[class=_4arz]>span").text();
+				String likeText = node.select("span[class=UFILikeSentenceText]").text();
 				likeText=likeText.replaceAll("[^\\d]*(\\d+).*", "$1");
 				if(StringUtils.isBlank(contentText) && StringUtils.isBlank(author) && StringUtils.isBlank(publishDate)){
 					continue;
 				}
 				
 				try {
-					likeText = likeText.replaceAll(".*(\\d+[.]*[\\d]*)([万]?).*", "$1");
+					likeText = likeText.replaceAll(".*(\\d+[.,]*[\\d]*)([万]?).*", "$1");
 					like = Double.valueOf(likeText).intValue();
 				} catch (Throwable e) {
 				}
@@ -81,7 +88,7 @@ public class FacebookDocBuilder {
 				} catch (Throwable e) {
 				}
 				
-				FacebookDoc facebookDoc=new FacebookDoc();
+				FacebookDoc facebookDoc = new FacebookDoc();
 				
 				try {
 					facebookDoc.setAttentionsCount(Integer.valueOf(attentions));
@@ -91,7 +98,6 @@ public class FacebookDocBuilder {
 					facebookDoc.setFansCount(Integer.valueOf(fans));
 				} catch (Throwable e) {
 				}
-				
 				
 				facebookDoc.setId(fbId);
 				facebookDoc.setAuthor(author);
@@ -106,8 +112,7 @@ public class FacebookDocBuilder {
 				facebookDoc.setGroupId(DateFormatUtils.format(new Date(), StringFormatConsts.DATE_NUMBER_FORMAT));
 				facebookDoc.setSignMind(signMind);
 				facebookDoc.setUrl(subUrl);
-				facebookDoc.setJobId(30552);
-				facebookDoc.setDate(Long.valueOf(DateFormatUtils.format(new Date(), StringFormatConsts.DATE_HOUR_NUMBER_FORMAT)));
+				facebookDoc.setDate(System.currentTimeMillis());
 				facebookDoc.setSource(message.getSourceId());
 				facebookDoc.setLevel(message.getLevel());
 				facebookDoc.setType(message.getTypeId());
@@ -123,13 +128,26 @@ public class FacebookDocBuilder {
 		}
 	}
 	
-	public static String getFaceBookFullPublishTime(String time) {
+	public static String getFaceBookFullPublishTime(String time) throws Exception {
+		String shortTimeFormat="yyyy-MM-dd HH:mm";
 		if (StringUtils.isBlank(time)) {
-			return "";
+			return ""; 
 		}
 		time = time.trim();
-		if (time.matches("[\\d]{4}-[\\d]{2}-[\\d]{2}[\\s]+[\\d]{2}:[\\d]{2}[\\s]*")) {
+		if (time.matches("[\\d]{4}-[\\d]{1,2}-[\\d]{1,2}[\\s]+[\\d]{1,2}:[\\d]{1,2}[\\s]*")) {
 			return time;
+		}
+		
+		if (time.matches("[\\d]{4}年[\\d]{1,2}月[\\d]{1,2}日[\\s]+[\\d]{1,2}:[\\d]{1,2}[\\s]*")) {
+			time= time.replaceAll("[年月]{1}","-").replaceAll("日","");
+			return DateFormatUtils.format(DateUtils.parseDate(time, "yyyy-M-d H:m"), shortTimeFormat);
+		}
+		if (time.matches("^1[4-8][\\d]{8}$")) {
+			return DateFormatUtils.format(Long.valueOf(time+"000"), shortTimeFormat);
+			
+		}
+		if (time.matches("^1[4-8][\\d]{11}$")) {
+			return DateFormatUtils.format(Long.valueOf(time), shortTimeFormat);
 		}
 		
 		if (time.matches("^[\\d]{2}-[\\d]{2}[\\s]+[\\d]{2}:[\\d]{2}[\\s]*")) {
