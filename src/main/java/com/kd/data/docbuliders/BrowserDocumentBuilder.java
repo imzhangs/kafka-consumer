@@ -134,6 +134,7 @@ public class BrowserDocumentBuilder {
 		}
 		browserSearchDoc.setDate(Long.valueOf(publishTime));
 		browserSearchDoc.setGroupId(groupId);
+		browserSearchDoc.setAuthorId(browserSearchDoc.author.hashCode());
 		browserSearchDoc.setId(urlMD5);
 		browserSearchDoc.setTitle(title);
 		browserSearchDoc.setUrl(url);

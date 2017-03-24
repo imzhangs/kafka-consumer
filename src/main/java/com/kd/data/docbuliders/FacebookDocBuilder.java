@@ -83,8 +83,7 @@ public class FacebookDocBuilder {
 				}
 				
 				try {
-					String authorIdText=url.substring(url.lastIndexOf("/"),url.length());
-					authorId=Integer.valueOf(authorIdText);
+					authorId=Integer.valueOf(author.hashCode());
 				} catch (Throwable e) {
 				}
 				

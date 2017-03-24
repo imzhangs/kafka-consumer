@@ -132,6 +132,7 @@ public class WeixinGzhDocumentBuilder {
 		
 		// 装箱
 		browserSearchDoc.setAuthor(author);
+		browserSearchDoc.setAuthorId(author.hashCode());
 		browserSearchDoc.setDomain(domain);
 		browserSearchDoc.setContent(StringUtils.isBlank(content) ? title : content);
 		browserSearchDoc.setPublishDate(publishDate);
