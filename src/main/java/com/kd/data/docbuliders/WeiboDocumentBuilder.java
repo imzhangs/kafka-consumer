@@ -113,7 +113,7 @@ public class WeiboDocumentBuilder {
 			for (Element node : els) {
 				author = node.select("header>div>div>a>h3[class=m-text-cut]").text();
 				publishDate = node.select("h4[class=m-text-cut]>span[class=time]").text();
-				publishDate = getWeiboFullPublishTime(publishDate);
+				publishDate = DocumentBuilder.getPublishTime(publishDate);
 				device = node.select("h4[class=m-text-cut]>span[class=from]").text();
 				device = getWeiboDevice(device);
 				contentText = node.select("article[class=weibo-main]>div[class=weibo-og]>div[class=weibo-text]").text();
@@ -272,7 +272,7 @@ public class WeiboDocumentBuilder {
 			for (Element node : els) {
 				author = node.select("header>div>div>a>h3[class=m-text-cut]").text();
 				publishDate = node.select("h4[class=m-text-cut]>span[class=time]").text();
-				publishDate = getWeiboFullPublishTime(publishDate);
+				publishDate = DocumentBuilder.getPublishTime(publishDate);
 				device = node.select("h4[class=m-text-cut]>span[class=from]").text();
 				device = getWeiboDevice(device);
 				contentText = node.select("article[class=weibo-main]>div[class=weibo-og]>div[class=weibo-text]").text();
@@ -317,6 +317,7 @@ public class WeiboDocumentBuilder {
 				
 				String docText=author + "," + weiboDocId + "," + publishDate + "," + contentText ;
 				weiboDocId=StringUtils.isBlank(weiboDocId)?MD5Util.MD5(docText):"";
+				Date publishedDate=DateUtils.parseDate(publishDate, DocumentBuilder.shortTimeFormat);
 				
 				weiboDoc.setId(weiboDocId);
 				weiboDoc.setAuthor(author);
@@ -328,11 +329,11 @@ public class WeiboDocumentBuilder {
 				weiboDoc.setContent(contentText);
 				weiboDoc.setDevice(device);
 				weiboDoc.setDocType(BuildDocTypeEnum.weiboDoc);
-				weiboDoc.setGroupId(DateFormatUtils.format(new Date(), StringFormatConsts.DATE_NUMBER_FORMAT));
+				weiboDoc.setGroupId(DateFormatUtils.format(publishedDate, StringFormatConsts.DATE_NUMBER_FORMAT));
 				weiboDoc.setSignMind(signMind);
 				weiboDoc.setUrl(url);
 				weiboDoc.setJobId(30552);
-				weiboDoc.setDate(Long.valueOf(DateFormatUtils.format(new Date(), StringFormatConsts.DATE_HOUR_NUMBER_FORMAT)));
+				weiboDoc.setDate(publishedDate.getTime());
 				weiboDoc.setJobId(message.getSourceId());
 				weiboDoc.setLevel(message.getLevel());
 				
@@ -400,7 +401,7 @@ public class WeiboDocumentBuilder {
 				Elements publishEle=node.select("div[class=WB_detail]>div[class=WB_from S_txt2]>a:eq(0)");
 				
 				publishDate = publishEle.attr("title").trim();
-				publishDate = getWeiboFullPublishTime(publishDate);
+				publishDate = DocumentBuilder.getPublishTime(publishDate);
 				
 				subUrl="http://weibo.com"+publishEle.attr("href");
 				weiboDocId = MD5Util.MD5(subUrl);
@@ -484,47 +485,6 @@ public class WeiboDocumentBuilder {
 	}
 
 	
-	
-	public static String getWeiboFullPublishTime(String time) {
-		if (StringUtils.isBlank(time)) {
-			return "";
-		}
-		time = time.trim();
-		if (time.matches("[\\d]{4}-[\\d]{2}-[\\d]{2}[\\s]+[\\d]{2}:[\\d]{2}[\\s]*")) {
-			return time;
-		}
-		
-		if (time.matches("^[\\d]{2}-[\\d]{2}[\\s]+[\\d]{2}:[\\d]{2}[\\s]*")) {
-			String year = DateFormatUtils.format(new Date(), "yyyy");
-			return year + "-" + time;
-		}
-
-		String regexToday = "^[今天|today]{2,5}(.*)";
-		if (time.matches(regexToday)) {
-			String todayYMD = DateFormatUtils.format(new Date(), "yyyy-MM-dd");
-			time = todayYMD + time.replaceFirst(regexToday, "$1");
-			return time;
-		}
-
-		String regexMin = "^([\\d]+)月([\\d]+)日[\\s]+([\\d]{2}:[\\d]{2}[\\s]*).*";
-		if (time.matches(regexMin)) {
-			String year = DateFormatUtils.format(new Date(), "yyyy");
-			String todayYMD =time.replaceAll(regexMin, year+"-$1-$2 $3");
-			return todayYMD;
-		}
-
-		regexMin = "^([\\d]+).*";
-		if (time.matches(regexMin)) {
-			int beforeMin = Integer.valueOf(time.replaceFirst(regexMin, "$1"));
-			Date date = DateUtils.addMinutes(new Date(), -beforeMin);
-			String todayYMD = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
-			return todayYMD;
-		}
-		
-
-		return time;
-	}
-
 	public static String getWeiboDevice(String device) {
 		if (StringUtils.isBlank(device)) {
 			return "";
@@ -542,7 +502,7 @@ public class WeiboDocumentBuilder {
 //			System.out.println(JSONObject.toJSONString(doc));
 //		}
 		
-		System.out.println(getWeiboFullPublishTime("3月19日 21:51"));
+		System.out.println(DocumentBuilder.getPublishTime("3月19日 21:51"));
 	}
 
 }

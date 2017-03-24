@@ -54,7 +54,7 @@ public class FacebookDocBuilder {
 				author = node.select("span[class=fwb fcg]").text();
 				
 				publishDate = node.select("abbr[class=_5ptz]").attr("title");
-				publishDate = getFaceBookFullPublishTime(publishDate);
+				publishDate = DocumentBuilder.getPublishTime(publishDate);
 				
 				subUrl= node.select("span[class=fsm fwn fcg]>a[class=_5pcq").attr("href");
 				subUrl=subUrl.startsWith("http")?subUrl:"http://www.facebook.com"+subUrl;
@@ -98,6 +98,7 @@ public class FacebookDocBuilder {
 					facebookDoc.setFansCount(Integer.valueOf(fans));
 				} catch (Throwable e) {
 				}
+				Date publishedDate=DateUtils.parseDate(publishDate, DocumentBuilder.shortTimeFormat);
 				
 				facebookDoc.setId(fbId);
 				facebookDoc.setAuthor(author);
@@ -109,10 +110,10 @@ public class FacebookDocBuilder {
 				facebookDoc.setContent(contentText);
 				facebookDoc.setComments(commentText);
 				facebookDoc.setDocType(BuildDocTypeEnum.facebookDoc);
-				facebookDoc.setGroupId(DateFormatUtils.format(new Date(), StringFormatConsts.DATE_NUMBER_FORMAT));
+				facebookDoc.setGroupId(DateFormatUtils.format(publishedDate, StringFormatConsts.DATE_NUMBER_FORMAT));
 				facebookDoc.setSignMind(signMind);
 				facebookDoc.setUrl(subUrl);
-				facebookDoc.setDate(System.currentTimeMillis());
+				facebookDoc.setDate(publishedDate.getTime());
 				facebookDoc.setSource(message.getSourceId());
 				facebookDoc.setLevel(message.getLevel());
 				facebookDoc.setType(message.getTypeId());
@@ -127,58 +128,5 @@ public class FacebookDocBuilder {
 			return facebookList;
 		}
 	}
-	
-	public static String getFaceBookFullPublishTime(String time) throws Exception {
-		String shortTimeFormat="yyyy-MM-dd HH:mm";
-		if (StringUtils.isBlank(time)) {
-			return ""; 
-		}
-		time = time.trim();
-		if (time.matches("[\\d]{4}-[\\d]{1,2}-[\\d]{1,2}[\\s]+[\\d]{1,2}:[\\d]{1,2}[\\s]*")) {
-			return time;
-		}
-		
-		if (time.matches("[\\d]{4}年[\\d]{1,2}月[\\d]{1,2}日[\\s]+[\\d]{1,2}:[\\d]{1,2}[\\s]*")) {
-			time= time.replaceAll("[年月]{1}","-").replaceAll("日","");
-			return DateFormatUtils.format(DateUtils.parseDate(time, "yyyy-M-d H:m"), shortTimeFormat);
-		}
-		if (time.matches("^1[4-8][\\d]{8}$")) {
-			return DateFormatUtils.format(Long.valueOf(time+"000"), shortTimeFormat);
-			
-		}
-		if (time.matches("^1[4-8][\\d]{11}$")) {
-			return DateFormatUtils.format(Long.valueOf(time), shortTimeFormat);
-		}
-		
-		if (time.matches("^[\\d]{2}-[\\d]{2}[\\s]+[\\d]{2}:[\\d]{2}[\\s]*")) {
-			String year = DateFormatUtils.format(new Date(), "yyyy");
-			return year + "-" + time;
-		}
 
-		String regexToday = "^[今天|today]{2,5}(.*)";
-		if (time.matches(regexToday)) {
-			String todayYMD = DateFormatUtils.format(new Date(), "yyyy-MM-dd");
-			time = todayYMD + time.replaceFirst(regexToday, "$1");
-			return time;
-		}
-
-		String regexMin = "^([\\d]+)月([\\d]+)日[\\s]+([\\d]{2}:[\\d]{2}[\\s]*).*";
-		if (time.matches(regexMin)) {
-			String year = DateFormatUtils.format(new Date(), "yyyy");
-			String todayYMD =time.replaceAll(regexMin, year+"-$1-$2 $3");
-			return todayYMD;
-		}
-
-		regexMin = "^([\\d]+).*";
-		if (time.matches(regexMin)) {
-			int beforeMin = Integer.valueOf(time.replaceFirst(regexMin, "$1"));
-			Date date = DateUtils.addMinutes(new Date(), -beforeMin);
-			String todayYMD = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
-			return todayYMD;
-		}
-		
-
-		return time;
-	}
-	
 }
