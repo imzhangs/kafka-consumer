@@ -33,7 +33,6 @@ public class FacebookDocBuilder {
 			return facebookList;
 		}
 		
-		String url=message.getUrl();
 		try {
 			Document htmlDoc=Jsoup.parse(message.getContent());
 			String author = "";
