@@ -8,11 +8,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 
 import com.kd.data.consumer.NativeConsumer;
 
 
 @SpringBootApplication
+@EnableRedisRepositories
 public class XgWeChatGzhConsumerApp {
 
 	@Value("${consume.thread.count}")
