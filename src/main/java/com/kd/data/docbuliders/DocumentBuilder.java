@@ -158,7 +158,9 @@ public class DocumentBuilder {
 			KafkaMessage dictMessage=new KafkaMessage();
 			dictMessage.setTopic(remoteDicTopic);
 			dictMessage.setContent(content);
-			
+			if(StringUtils.isBlank(dictMessage.getContent())){
+				log.error("to dict content is empty !!! ");
+			}
 			HttpRequestUtil.postJSON(remoteDicSplitUrl,JSONObject.toJSONString(dictMessage) );
 		} else {
 			log.error("message content or buildDocType is null ....");
