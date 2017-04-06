@@ -25,7 +25,7 @@ public class SendMQBuilder {
 	String kfkProducerUrl;
 	
 	/**
-	 * 从html 文档中 抓出所有的 链接 并发到 消息队列
+	 * 从html 文档中 抓出所有的 链接 发到 消息队列
 	 * @param htmlSources html document
 	 */
 	public  void urlExplainAndSend(KafkaMessage message){
