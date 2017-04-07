@@ -49,6 +49,9 @@ public class FacebookDocBuilder {
 			String signMind = "0";
 			
 			Elements cardList = htmlDoc.select("div[class=_427x]");
+			if(cardList==null || cardList.isEmpty()){
+				cardList=htmlDoc.select("ol[id=u_0_16_story]>div[class=_5pcb _4b0l]:eq(0)");
+			}
 			for (Element node : cardList) {
 				author = node.select("span[class=fwb fcg]").text();
 				
@@ -92,11 +95,13 @@ public class FacebookDocBuilder {
 					facebookDoc.setAttentionsCount(Integer.valueOf(attentions));
 				} catch (Throwable e) {
 				}
+				
+				Date publishedDate=new Date();
 				try {
 					facebookDoc.setFansCount(Integer.valueOf(fans));
+					publishedDate=DateUtils.parseDate(publishDate, DocumentBuilder.shortTimeFormat);
 				} catch (Throwable e) {
 				}
-				Date publishedDate=DateUtils.parseDate(publishDate, DocumentBuilder.shortTimeFormat);
 				
 				facebookDoc.setId(fbId);
 				facebookDoc.setAuthor(author);
@@ -109,9 +114,9 @@ public class FacebookDocBuilder {
 				facebookDoc.setComments(commentText);
 				facebookDoc.setDocType(BuildDocTypeEnum.facebookDoc);
 				facebookDoc.setGroupId(DateFormatUtils.format(publishedDate, StringFormatConsts.DATE_NUMBER_FORMAT));
+				facebookDoc.setDate(publishedDate.getTime());
 				facebookDoc.setSignMind(signMind);
 				facebookDoc.setUrl(subUrl);
-				facebookDoc.setDate(publishedDate.getTime());
 				facebookDoc.setSource(message.getSourceId());
 				facebookDoc.setLevel(message.getLevel());
 				facebookDoc.setType(message.getTypeId());

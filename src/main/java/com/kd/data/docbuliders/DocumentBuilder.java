@@ -2,6 +2,7 @@ package com.kd.data.docbuliders;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -101,11 +102,11 @@ public class DocumentBuilder {
 			
 			
 			//// 存档
-			String content="";
+			List<String> contentList=new ArrayList<String>();
 			switch (message.getBuildDocType()) {
 			case newsDoc:
 				NewsDoc newsDoc = NewsDocumentBuilder.defaultNewsDocBuild(message.getUrl(), message.getContent());
-				content=newsDoc.getContent();
+				contentList.add(newsDoc.getTitle()+newsDoc.getContent());
 				//indexURL ??
 				indexSaveResult = HttpRequestUtil.postJSON(newsIndexSaveUrl, JSONObject.toJSONString(newsDoc));
 				dbSaveResult =HttpRequestUtil.postJSON(newsSaveDB, JSONObject.toJSONString(newsDoc));
@@ -116,7 +117,7 @@ public class DocumentBuilder {
 				BrowserSearchDoc browserSearchDoc = BrowserDocumentBuilder.browserSearchDocBuild(message.getUrl(),
 						message.getContent(), true);
 
-				content=browserSearchDoc.getContent();
+				contentList.add(browserSearchDoc.getTitle()+browserSearchDoc.getContent());
 				//indexURL ??
 				indexSaveResult = HttpRequestUtil.postJSON(newsIndexSaveUrl, JSONObject.toJSONString(browserSearchDoc));
 				break;
@@ -137,7 +138,7 @@ public class DocumentBuilder {
 					break;
 				}
 
-				content=weixinGzhDoc.getContent();
+				contentList.add(weixinGzhDoc.getTitle()+weixinGzhDoc.getContent());
 				indexSaveResult = HttpRequestUtil.postJSON(weixinSaveIndex, JSONObject.toJSONString(weixinGzhDoc));
 				dbSaveResult = HttpRequestUtil.postJSON(DocumentBuilder.weixinSaveDB, JSONObject.toJSONString(weixinGzhDoc));
 				dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
@@ -155,13 +156,15 @@ public class DocumentBuilder {
 			default:
 				break;
 			}
-			KafkaMessage dictMessage=new KafkaMessage();
-			dictMessage.setTopic(remoteDicTopic);
-			dictMessage.setContent(content);
-			if(StringUtils.isBlank(dictMessage.getContent())){
-				log.error("to dict content is empty !!! ");
+			for(String content:contentList){
+				KafkaMessage dictMessage=new KafkaMessage();
+				dictMessage.setTopic(remoteDicTopic);
+				dictMessage.setContent(content);
+				if(StringUtils.isBlank(dictMessage.getContent())){
+					log.error("to dict content is empty !!! ");
+				}
+				HttpRequestUtil.postJSON(remoteDicSplitUrl,JSONObject.toJSONString(dictMessage) );
 			}
-			HttpRequestUtil.postJSON(remoteDicSplitUrl,JSONObject.toJSONString(dictMessage) );
 		} else {
 			log.error("message content or buildDocType is null ....");
 		}
