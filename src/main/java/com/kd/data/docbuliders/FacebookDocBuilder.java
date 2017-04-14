@@ -50,7 +50,7 @@ public class FacebookDocBuilder {
 			
 			Elements cardList = htmlDoc.select("div[class=_427x]");
 			if(cardList==null || cardList.isEmpty()){
-				cardList=htmlDoc.select("ol[id=u_0_16_story]>div[class=_5pcb _4b0l]:eq(0)");
+				cardList=htmlDoc.select("ol[id=u_0_16_story]>div[class=_5pcb _4b0l]>div[class=_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8]");
 			}
 			for (Element node : cardList) {
 				author = node.select("span[class=fwb fcg]").text();
@@ -62,7 +62,7 @@ public class FacebookDocBuilder {
 				subUrl=subUrl.startsWith("http")?subUrl:"http://www.facebook.com"+subUrl;
 				fbId = MD5Util.MD5(subUrl+publishDate);
 						
-				contentText = node.select("div[class=_5pbx userContent]").text();
+				contentText = node.select("div[class=_5pbx userContent]>div>p").text();
 				Elements commentList=node.select("div[class=UFICommentContentBlock]");
 				StringBuilder commentTextBuilder=new StringBuilder();
 				for(Element commentEl:commentList){

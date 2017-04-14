@@ -126,6 +126,7 @@ public class DocumentBuilder {
 				
 				for(WeiboDoc weiboDoc:weibodocList){
 					
+					contentList.add(weiboDoc.author+" "+weiboDoc.content);
 					indexSaveResult = HttpRequestUtil.postJSON(weiboSaveIndex, JSONObject.toJSONString(weiboDoc));
 					dbSaveResult =HttpRequestUtil.postJSON(weiboSaveDB, JSONObject.toJSONString(weiboDoc));
 					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
@@ -147,6 +148,7 @@ public class DocumentBuilder {
 			case facebookDoc:
 				List<FacebookDoc> listFb=FacebookDocBuilder.tempFacebookTopicBuild(message, true);
 				for(FacebookDoc fb:listFb){
+					contentList.add(fb.author+" "+fb.content +" "+fb.comments);
 					indexSaveResult = HttpRequestUtil.postJSON(facebookSaveIndex, JSONObject.toJSONString(fb));
 					dbSaveResult = HttpRequestUtil.postJSON(DocumentBuilder.facebookSaveDB, JSONObject.toJSONString(fb));
 					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
