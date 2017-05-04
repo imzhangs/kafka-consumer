@@ -220,8 +220,9 @@ public class DocumentBuilder {
 	
 	
 	public static String getPublishTime(String time) throws Exception {
+		try{
 		if (StringUtils.isBlank(time)) {
-			return ""; 
+			return  DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss");
 		}
 		time = time.trim();
 		if (time.matches("[\\d]{4}-[\\d]{1,2}-[\\d]{1,2}[\\s]+[\\d]{1,2}:[\\d]{1,2}[\\s]*")) {
@@ -301,7 +302,7 @@ public class DocumentBuilder {
 			return todayYMD;
 		}
 		
-
+		}catch(Throwable e){time=DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss");}
 		return time;
 	}
 	
