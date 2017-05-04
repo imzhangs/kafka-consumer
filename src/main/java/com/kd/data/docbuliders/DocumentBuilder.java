@@ -252,6 +252,33 @@ public class DocumentBuilder {
 			return time;
 		}
 
+
+		String regexBeforeHours = "^([\\d]+)([小时分钟]{2,4})[前]*.*";
+		if (time.matches(regexBeforeHours)) {
+			int before=0;
+			Date result=new Date();
+			try{
+				String hours=time.replaceFirst(regexBeforeHours, "$1");
+				before=Integer.parseInt(hours);
+			}catch(Throwable e){};
+			
+
+			String mount=time.replaceFirst(regexBeforeHours, "$2");
+			if(mount.contains("小时")){
+				result=DateUtils.addHours(new Date(), -before);
+			}else{
+				result=DateUtils.addMinutes(new Date(), -before);
+			}
+			
+			return DateFormatUtils.format(result, "yyyy-MM-dd HH:mm:ss");
+		}
+
+		String regexNow = "^刚刚.*";
+		if (time.matches(regexNow)) {
+			String todayYMDHMS = DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss");
+			return todayYMDHMS;
+		}
+
 		String regexMin = "^([\\d]+)月([\\d]+)日[\\s]+([\\d]{2}:[\\d]{2}[\\s]*).*";
 		if (time.matches(regexMin)) {
 			String year = DateFormatUtils.format(new Date(), "yyyy");
@@ -266,6 +293,13 @@ public class DocumentBuilder {
 			String todayYMD = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
 			return todayYMD;
 		}
+		regexMin = "^([\\d]+).*";
+		if (time.matches(regexMin)) {
+			int beforeMin = Integer.valueOf(time.replaceFirst(regexMin, "$1"));
+			Date date = DateUtils.addMinutes(new Date(), -beforeMin);
+			String todayYMD = DateFormatUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+			return todayYMD;
+		}
 		
 
 		return time;
@@ -273,8 +307,8 @@ public class DocumentBuilder {
 	
 
 	public static void main(String[] args) throws Throwable {
-		String url = "/asdfasdfas/asdf/asdf";
-		System.out.println(url.matches(HtmlRegexConsts.DOMAIN));
+		String times = "15分钟前";
+		System.out.println(getPublishTime(times));
 	}
 
 }

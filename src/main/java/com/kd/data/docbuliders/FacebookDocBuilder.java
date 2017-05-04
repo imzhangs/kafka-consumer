@@ -26,7 +26,7 @@ public class FacebookDocBuilder {
 	
 
 	@SuppressWarnings("finally")
-	public static List<FacebookDoc> tempFacebookTopicBuild(KafkaMessage message, boolean isPlainText) {
+	public static  List<FacebookDoc> tempFacebookTopicBuild(KafkaMessage message, boolean isPlainText) {
 		List<FacebookDoc> facebookList = new ArrayList<>();
 		if(message==null || StringUtils.isBlank(message.getContent())){
 			logger.error("message content is null !!!!");
@@ -48,11 +48,11 @@ public class FacebookDocBuilder {
 			String fans = "0";
 			String signMind = "0";
 			
-			Elements cardList = htmlDoc.select("div[class=_427x]");
-			if(cardList==null || cardList.isEmpty()){
-				cardList=htmlDoc.select("ol[id=u_0_16_story]>div[class=_5pcb _4b0l]>div[class=_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8]");
+			Elements dataList = htmlDoc.select("div[class=_427x]");
+			if(dataList==null || dataList.isEmpty()){
+				dataList=htmlDoc.select("ol[id=u_0_16_story]>div[class=_5pcb _4b0l]>div[class=_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8]");
 			}
-			for (Element node : cardList) {
+			for (Element node : dataList) {
 				author = node.select("span[class=fwb fcg]").text();
 				
 				publishDate = node.select("abbr[class=_5ptz]").attr("title");
