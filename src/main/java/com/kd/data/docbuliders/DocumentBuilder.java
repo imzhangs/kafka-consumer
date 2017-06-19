@@ -145,13 +145,33 @@ public class DocumentBuilder {
 				log.info("======================>>>weixinSaveIndex and weixinSaveDB {}  sources =>>{}", dbSaveResult, indexSaveResult);
 				break;
 			case facebookDoc:
-				List<FacebookDoc> listFb=FacebookDocBuilder.tempFacebookTopicBuild(message, true);
-				for(FacebookDoc fb:listFb){
+				List<FacebookDoc> listSocialAccount=FacebookDocBuilder.tempFacebookTopicBuild(message, true);
+				for(FacebookDoc fb:listSocialAccount){
 					contentList.add(fb.author+" "+fb.content +" "+fb.comments);
 					indexSaveResult = HttpRequestUtil.postJSON(facebookSaveIndex, JSONObject.toJSONString(fb));
 					dbSaveResult = HttpRequestUtil.postJSON(DocumentBuilder.facebookSaveDB, JSONObject.toJSONString(fb));
 					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
 					log.info("======================>>>facebookSaveIndex and facebookSaveDB {}  sources =>>{}", dbSaveResult, indexSaveResult);
+				}
+				break;
+			case youtobeDoc:
+				listSocialAccount=FacebookDocBuilder.tempFacebookTopicBuild(message, true);
+				for(FacebookDoc youtobeDoc:listSocialAccount){
+					contentList.add(youtobeDoc.author+" "+youtobeDoc.content +" "+youtobeDoc.comments);
+					indexSaveResult = HttpRequestUtil.postJSON(facebookSaveIndex, JSONObject.toJSONString(youtobeDoc));
+					dbSaveResult = HttpRequestUtil.postJSON(DocumentBuilder.facebookSaveDB, JSONObject.toJSONString(youtobeDoc));
+					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
+					log.info("======================>>>youtubeSaveIndex and youtubeSaveDB {}  sources =>>{}", dbSaveResult, indexSaveResult);
+				}
+				break;
+			case twitterDoc:
+				listSocialAccount=FacebookDocBuilder.tempFacebookTopicBuild(message, true);
+				for(FacebookDoc twitterDoc:listSocialAccount){
+					contentList.add(twitterDoc.author+" "+twitterDoc.content +" "+twitterDoc.comments);
+					indexSaveResult = HttpRequestUtil.postJSON(facebookSaveIndex, JSONObject.toJSONString(twitterDoc));
+					dbSaveResult = HttpRequestUtil.postJSON(DocumentBuilder.facebookSaveDB, JSONObject.toJSONString(twitterDoc));
+					dbSaveResult = StringUtils.isNotBlank(dbSaveResult) ? "successfully" : "failed !!";
+					log.info("======================>>>twitterSaveIndex and twitterSaveDB {}  sources =>>{}", dbSaveResult, indexSaveResult);
 				}
 				break;
 			default:
@@ -253,7 +273,7 @@ public class DocumentBuilder {
 		}
 
 
-		String regexBeforeHours = "^([\\d]+)([小时分钟]{2,4})[前]*.*";
+		String regexBeforeHours = "^([\\d]+)([分钟小时天周个月]{1,4})[前]*.*";
 		if (time.matches(regexBeforeHours)) {
 			int before=0;
 			Date result=new Date();
@@ -266,6 +286,12 @@ public class DocumentBuilder {
 			String mount=time.replaceFirst(regexBeforeHours, "$2");
 			if(mount.contains("小时")){
 				result=DateUtils.addHours(new Date(), -before);
+			}else if(mount.contains("天")){
+				result=DateUtils.addDays(new Date(), -before);
+			}else if(mount.contains("周")){
+				result=DateUtils.addWeeks(new Date(), -before);
+			}else if(mount.matches("[个]?月")){
+				result=DateUtils.addMonths(new Date(), -before);
 			}else{
 				result=DateUtils.addMinutes(new Date(), -before);
 			}
@@ -308,7 +334,7 @@ public class DocumentBuilder {
 	
 
 	public static void main(String[] args) throws Throwable {
-		String times = "15分钟前";
+		String times = "1个月前";
 		System.out.println(getPublishTime(times));
 	}
 
