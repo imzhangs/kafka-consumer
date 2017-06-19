@@ -117,6 +117,7 @@ public class WeiboDocumentBuilder {
 				device = node.select("h4[class=m-text-cut]>span[class=from]").text();
 				device = getWeiboDevice(device);
 				contentText = node.select("article[class=weibo-main]>div[class=weibo-og]>div[class=weibo-text]").text();
+				contentText=contentText.replaceAll("展开全文","");
 				String forwardText = node.select("footer>div:eq(0)>h4").text();
 				String commentText = node.select("footer>div:eq(2)>h4").text();
 				String likeText = node.select("footer>div:eq(4)>h4").text();
@@ -335,6 +336,7 @@ public class WeiboDocumentBuilder {
 				weiboDoc.setDate(publishedDate.getTime());
 				weiboDoc.setJobId(message.getSourceId());
 				weiboDoc.setLevel(message.getLevel());
+				weiboDoc.setType(message.getTypeId());
 				
 				weiboList.add(weiboDoc);
 			}
@@ -407,7 +409,8 @@ public class WeiboDocumentBuilder {
 						
 				device = node.select("div[class=WB_detail]>div[class=WB_from S_txt2]>a:eq(1)").text();
 				device = getWeiboDevice(device);
-				contentText = node.select("div[class=WB_text W_f14]").text();
+				contentText=node.select("div[class=WB_text W_f14]").text();
+				
 				contentText+=node.select("div[class=WB_expand S_bg1]").text();
 				String forwardText = node.select("ul[class=WB_row_line WB_row_r4 clearfix S_line2]>li:eq(1)").text();
 				forwardText=forwardText.replaceAll("[^\\d]*(\\d+).*", "$1");

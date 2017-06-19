@@ -47,6 +47,7 @@ public class FacebookDocBuilder {
 			String attentions = "0";
 			String fans = "0";
 			String signMind = "0";
+			String title="";
 			
 			Elements dataList = htmlDoc.select("div[class=_427x]");
 			if(dataList==null || dataList.isEmpty()){
@@ -61,8 +62,15 @@ public class FacebookDocBuilder {
 				subUrl= node.select("span[class=fsm fwn fcg]>a[class=_5pcq").attr("href");
 				subUrl=subUrl.startsWith("http")?subUrl:"http://www.facebook.com"+subUrl;
 				fbId = MD5Util.MD5(subUrl+publishDate);
-						
-				contentText = node.select("div[class=_5pbx userContent]>div>p").text();
+				
+				title=node.select("div[class=_5pbw _5vra _11dd]").text();
+				contentText = node.select("div[class=_5pbx userContent]").parents().get(0).text();
+				String imgContent=node.select("div[class=uiScaledImageContainer _517g]").attr("src");
+				contentText += imgContent;
+				
+				title=StringUtils.isBlank(title)?contentText:title;
+				contentText=StringUtils.isBlank(contentText)?title:contentText;
+				
 				Elements commentList=node.select("div[class=UFICommentContentBlock]");
 				StringBuilder commentTextBuilder=new StringBuilder();
 				for(Element commentEl:commentList){
@@ -73,7 +81,7 @@ public class FacebookDocBuilder {
 				String commentText =commentTextBuilder.toString();
 				
 				String likeText = node.select("span[class=UFILikeSentenceText]").text();
-				likeText=likeText.replaceAll("[^\\d]*(\\d+).*", "$1");
+				likeText=likeText.replaceAll("[^\\d]*(\\d+).*", "$1");	
 				if(StringUtils.isBlank(contentText) && StringUtils.isBlank(author) && StringUtils.isBlank(publishDate)){
 					continue;
 				}
@@ -105,6 +113,7 @@ public class FacebookDocBuilder {
 				
 				facebookDoc.setId(fbId);
 				facebookDoc.setAuthor(author);
+				facebookDoc.setTitle(title);
 				facebookDoc.setAuthorId(authorId);
 				facebookDoc.setClickNum(like);
 				facebookDoc.setCommentNum(comment);

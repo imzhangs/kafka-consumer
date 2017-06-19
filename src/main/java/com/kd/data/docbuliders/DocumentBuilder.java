@@ -21,7 +21,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.kd.browersearch.domain.BrowserSearchDoc;
 import com.kd.browersearch.domain.FacebookDoc;
 import com.kd.browersearch.domain.WeiboDoc;
-import com.kd.commons.consts.HtmlRegexConsts;
 import com.kd.commons.domain.KafkaMessage;
 import com.kd.commons.enums.ExplainTypeEnum;
 import com.kd.commons.http.HttpRequestUtil;
@@ -304,6 +303,7 @@ public class DocumentBuilder {
 		
 		}catch(Throwable e){time=DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss");}
 		return time;
+		
 	}
 	
 

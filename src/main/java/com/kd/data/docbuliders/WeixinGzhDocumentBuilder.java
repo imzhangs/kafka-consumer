@@ -73,7 +73,6 @@ public class WeixinGzhDocumentBuilder {
 			} else {
 				value.pCount = 1;
 				value.htmlContent = isPlainText ? paperSub.parent().text() : paperSub.parent().html();
-				value.htmlContent = value.htmlContent.trim();
 			}
 			contentMapping.put(key, value);
 		}
@@ -109,11 +108,11 @@ public class WeixinGzhDocumentBuilder {
 
 		String content = contentBuff.toString();
 		// content.2
-		content = content.split(HtmlContentConsts.CONTENT_END)[0];
-		// content.3
-		content = content.replaceAll(HtmlContentConsts.CONTENT_INNER_MEDIA, "");
-		// content.4
-		content = content.replaceAll(HtmlRegexConsts.EXHANGE_TAG, "");
+//		content = content.split(HtmlContentConsts.CONTENT_END)[0];
+//		// content.3
+//		content = content.replaceAll(HtmlContentConsts.CONTENT_INNER_MEDIA, "");
+//		// content.4
+//		content = content.replaceAll(HtmlRegexConsts.EXHANGE_TAG, "");
 
 		logger.info("result:Start==================<{}>===================", url);
 		logger.info(" url:\t\t {}", url);
